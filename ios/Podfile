@@ -16,7 +16,7 @@ end
 
 target 'AsdLanguage' do
   config = use_native_modules!
-
+  pod 'DoubleConversion', :podspec => '../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec'
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.
@@ -38,3 +38,6 @@ target 'AsdLanguage' do
     )
   end
 end
+
+
+
