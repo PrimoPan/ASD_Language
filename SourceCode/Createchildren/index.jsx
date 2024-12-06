@@ -1,5 +1,7 @@
+// CreateChildren.js
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import VbMapp from '../Components/VbMapp'; // 确保路径正确
 
 const CreateChildren = () => {
   const [name, setName] = useState('');
@@ -8,10 +10,10 @@ const CreateChildren = () => {
   const [courseDuration, setCourseDuration] = useState('');
   const [reinforcements, setReinforcements] = useState([]);
   const [milestones, setMilestones] = useState([
-    Array(15).fill(false),
-    Array(15).fill(false),
-    Array(10).fill(false),
-    Array(10).fill(false)
+    Array(15).fill(false), // 词汇
+    Array(15).fill(false), // 命名
+    Array(10).fill(false), // 语言结构
+    Array(10).fill(false)  // 对话
   ]);
 
   const addReinforcement = () => {
@@ -32,14 +34,27 @@ const CreateChildren = () => {
     setReinforcements(updatedReinforcements);
   };
 
-  const toggleMilestone = (col, index) => {
-    let newMilestones = [...milestones];
-    for (let i = 0; i < newMilestones[col].length; i++) newMilestones[col][i] = false;
-    for (let i = index; i < newMilestones[col].length; i++) {
+  /**
+   * 更新里程碑状态，并接收列索引和里程碑索引
+   * @param {number} col - 列索引
+   * @param {number} dataIndex - 里程碑索引
+   */
+  const toggleMilestone = (col, dataIndex) => {
+    let newMilestones = milestones.map(column => [...column]); // 深拷贝
+
+    // 将点击列的所有里程碑设为false
+    newMilestones[col].fill(false);
+
+    // 将从底部（索引0）到 dataIndex 的里程碑设为true
+    for (let i = 0; i <= dataIndex; i++) {
       newMilestones[col][i] = true;
     }
 
     setMilestones(newMilestones);
+
+    // 记录点击的列和里程碑
+    console.log(`列索引: ${col}, 里程碑索引: ${dataIndex}`);
+    Alert.alert(`点击事件`, `列 ${col + 1}, 里程碑 ${dataIndex + 1} 被点击`);
   };
 
   const milestoneColors = ['#44DCF8', '#FCC40B', '#FF7A69', '#0ED89E'];
@@ -54,13 +69,14 @@ const CreateChildren = () => {
       milestones
     };
     console.log('提交的数据:', formData);
+    Alert.alert('提交成功', JSON.stringify(formData, null, 2));
   };
 
   return (
       <View style={styles.container}>
-        {/* 左侧区域 1/2 */}
+        {/* 左侧区域 */}
         <View style={styles.leftContainer}>
-          {/* 上半部分 1/4 */}
+          {/* 上半部分 */}
           <View style={styles.inputGroup}>
             <View style={styles.row}>
               <TextInput
@@ -74,6 +90,7 @@ const CreateChildren = () => {
                   value={age}
                   onChangeText={setAge}
                   style={[styles.input, { flex: 1 }]} // 年龄
+                  keyboardType="numeric"
               />
             </View>
             <View style={styles.row}>
@@ -107,15 +124,15 @@ const CreateChildren = () => {
             </View>
           </View>
 
-          {/* 下半部分 1/4 */}
+          {/* 下半部分 */}
           <View style={styles.reinforcements}>
-            {reinforcements.map((reinforcement, index) => (
+            {reinforcements.map((reinforcement) => (
                 <View key={reinforcement.id} style={styles.reinforcementItem}>
                   <TextInput
                       placeholder="输入强化物"
                       value={reinforcement.value}
                       onChangeText={(text) => updateReinforcement(reinforcement.id, text)}
-                      style={styles.input}
+                      style={[styles.input, { flex: 1, marginRight: 10 }]}
                   />
                   <Button title="删除" onPress={() => removeReinforcement(reinforcement.id)} />
                 </View>
@@ -125,27 +142,22 @@ const CreateChildren = () => {
         </View>
 
         {/* 右侧区域 里程碑 */}
-        <View style={styles.milestones}>
-          <View style={styles.milestoneWrapper}>
-            {milestones.map((column, colIndex) => (
-                <View key={colIndex} style={styles.milestoneColumn}>
-                  {column.map((selected, index) => (
-                      <TouchableOpacity
-                          key={index}
-                          style={[
-                            styles.milestoneBlock,
-                            { backgroundColor: selected ? milestoneColors[colIndex % milestoneColors.length] : '#FFF' }
-                          ]}
-                          onPress={() => toggleMilestone(colIndex, index)}
-                      />
-                  ))}
-                </View>
-            ))}
-          </View>
+        <View style={styles.milestoneContainer}>
+          <VbMapp
+              milestones={milestones}
+              milestoneColors={milestoneColors}
+              onMilestoneToggle={toggleMilestone} // 传递回调函数
+          />
         </View>
 
         {/* 提交按钮 */}
-        <Button title="提交" onPress={handleSubmit} disabled={!name || !age || !gender || !courseDuration} />
+        <View style={styles.submitButton}>
+          <Button
+              title="提交"
+              onPress={handleSubmit}
+              disabled={!name || !age || !gender || !courseDuration}
+          />
+        </View>
       </View>
   );
 };
@@ -158,15 +170,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0F7FA',
   },
   leftContainer: {
-    flex: 1,  // 左侧区域，占据1/2
-    flexDirection: 'column',  // 上下排列
-    justifyContent: 'flex-start',  // 上对齐
-    height: '100%',  // 确保高度占满父容器
+    flex: 1, // 左侧区域，占据1/2
+    flexDirection: 'column', // 上下排列
+    justifyContent: 'flex-start', // 上对齐
+    height: '100%', // 确保高度占满父容器
   },
   inputGroup: {
-    flex: 1,  // 占据左上角的1/2
     justifyContent: 'center',
-    paddingTop: 20,  // 居中输入框
+    paddingTop: 20, // 居中输入框
   },
   input: {
     borderWidth: 1,
@@ -178,7 +189,7 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'center', // 垂直居中对齐
     marginBottom: 10,
   },
   label: {
@@ -216,7 +227,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   reinforcements: {
-    flex: 1,  // 占据左下角的1/2
     marginTop: 20,
     justifyContent: 'flex-start',
   },
@@ -225,32 +235,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  milestones: {
-    flex: 1,  // 右侧区域占据1/2高度
-    justifyContent: 'flex-start',  // 上对齐
-    alignItems: 'center',  // 横向居中
-    flexDirection: 'row',
-    height: '100%',  // 确保右侧区域的高度和左侧一致
+  milestoneContainer: {
+    flex: 1, // 右侧区域，占据1/2
+    justifyContent: 'center', // 垂直居中
+    alignItems: 'center', // 水平居中
   },
-  milestoneWrapper: {
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    flexDirection: 'row',
-    flex: 1,
-  },
-  milestoneColumn: {
-    flexDirection: 'column',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    height: '100%',
-  },
-  milestoneBlock: {
-    width: 60,  // 格子宽度
-    height: 30,  // 格子高度
-    margin: 5,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 4,
+  submitButton: {
+    position: 'absolute',
+    bottom: 20,
+    left: 20,
+    right: 20,
   },
 });
 
