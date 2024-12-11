@@ -7,6 +7,8 @@ import { View, Text } from 'react-native';
 import Opening from './SourceCode/Opening/Opening';
 import Login from './SourceCode/Login/Login';
 import CreateChildren from './SourceCode/Createchildren/index.jsx';  // 引入 CreateChildren 组件
+import GptTest from "./SourceCode/Components/GptTest";
+import ImageGenerator from "./SourceCode/Components/ImageGenerator"
 import useStore from './SourceCode/store/store'; // 引入 zustand store
 
 const Stack = createNativeStackNavigator();
@@ -19,7 +21,9 @@ const App = () => {
             <Stack.Navigator initialRouteName={user?.username ? "Login" : "Opening"} screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Opening" component={Opening} />
                 <Stack.Screen name="Login" component={Login} />
-                <Stack.Screen name="CreateChildren" component={CreateChildren} />      
+                <Stack.Screen name="CreateChildren" component={CreateChildren} />
+                <Stack.Screen name="GptTest" component={GptTest}/>
+                <Stack.Screen name="ImageGenerator" component={ImageGenerator}/>
             </Stack.Navigator>
         </NavigationContainer>
     );
