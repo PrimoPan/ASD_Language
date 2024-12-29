@@ -13,7 +13,7 @@ const Login = ({ navigation }) => {  // 获取navigation props
       try {
         await setUsernameAsync(username);  // 异步设置用户名
         alert('登录成功');
-        navigation.replace('ImageGenerator');  // 登录成功后跳转到 GptTest 页面
+        navigation.replace('CreateChildren');  // 登录成功后跳转到 GptTest 页面
       } catch (error) {
         alert('登录失败，请重试');
       }

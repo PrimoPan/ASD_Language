@@ -9,6 +9,7 @@ import Login from './SourceCode/Login/Login';
 import CreateChildren from './SourceCode/Createchildren/index.jsx';  // 引入 CreateChildren 组件
 import GptTest from "./SourceCode/Components/GptTest";
 import ImageGenerator from "./SourceCode/Components/ImageGenerator"
+import LearningMode from "./SourceCode/LearningMode/LearningMode";
 import useStore from './SourceCode/store/store'; // 引入 zustand store
 
 const Stack = createNativeStackNavigator();
@@ -24,6 +25,7 @@ const App = () => {
                 <Stack.Screen name="CreateChildren" component={CreateChildren} />
                 <Stack.Screen name="GptTest" component={GptTest}/>
                 <Stack.Screen name="ImageGenerator" component={ImageGenerator}/>
+                <Stack.Screen name='LearningMode' component={LearningMode}/>
             </Stack.Navigator>
         </NavigationContainer>
     );
