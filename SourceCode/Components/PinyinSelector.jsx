@@ -1,9 +1,8 @@
-// PinyinSelector.js
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 
-// 这里定义声母分组
-const pinyinGroups = [
+// 定义声母分组数据
+const pinyinGroupsByPosition = [
     { label: '双唇音', initials: ['b', 'p', 'm'] },
     { label: '唇齿音', initials: ['f'] },
     { label: '舌面音', initials: ['j', 'q', 'x'] },
@@ -13,22 +12,31 @@ const pinyinGroups = [
     { label: '舌根音', initials: ['g', 'k', 'h'] },
 ];
 
-const PinyinSelector = ({
-                            selectedInitials,          // 当前选中的生母数组
-                            onSelectedInitialsChange,  // 回调，传回最新选中数组
-                            maxCount = 3               // 最多可选多少个
-                        }) => {
+const pinyinGroupsByStage = [
+    { label: '构音第一阶段', initials: ['b', 'm', 'd', 'h'] },
+    { label: '构音第二阶段', initials: ['p', 't', 'g', 'k', 'n'] },
+    { label: '构音第三阶段', initials: ['f', 'j', 'q', 'x'] },
+    { label: '构音第四阶段', initials: ['l', 'z', 's', 'r'] },
+    { label: '构音第五阶段', initials: ['c', 'zh', 'ch', 'sh'] },
+];
 
-    // 当点击某个生母按钮时
+const PinyinSelector = ({
+                            selectedInitials,
+                            onSelectedInitialsChange,
+                            maxCount = 3,
+                        }) => {
+    const [arrangement, setArrangement] = useState('position'); // 当前排列方式
+
+    // 根据排列方式动态选择分组数据
+    const pinyinGroups =
+        arrangement === 'position' ? pinyinGroupsByPosition : pinyinGroupsByStage;
+
     const handlePress = (initial) => {
-        // 如果已选中 => 取消勾选
         if (selectedInitials.includes(initial)) {
-            const newSelected = selectedInitials.filter(item => item !== initial);
+            const newSelected = selectedInitials.filter((item) => item !== initial);
             onSelectedInitialsChange(newSelected);
             return;
         }
-
-        // 如果尚未选中 => 尝试添加
         if (selectedInitials.length < maxCount) {
             const newSelected = [...selectedInitials, initial];
             onSelectedInitialsChange(newSelected);
@@ -39,13 +47,46 @@ const PinyinSelector = ({
 
     return (
         <View>
-            {/* 分组渲染：每组一行 */}
+            {/* 切换排列方式的按钮 */}
+            <View style={styles.buttonGroup}>
+                <TouchableOpacity
+                    style={[
+                        styles.switchButton,
+                        arrangement === 'position' && styles.activeButton,
+                    ]}
+                    onPress={() => setArrangement('position')}
+                >
+                    <Text
+                        style={[
+                            styles.switchButtonText,
+                            arrangement === 'position' && styles.activeButtonText,
+                        ]}
+                    >
+                        声母发生部位
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[
+                        styles.switchButton,
+                        arrangement === 'stage' && styles.activeButton,
+                    ]}
+                    onPress={() => setArrangement('stage')}
+                >
+                    <Text
+                        style={[
+                            styles.switchButtonText,
+                            arrangement === 'stage' && styles.activeButtonText,
+                        ]}
+                    >
+                        构音阶段
+                    </Text>
+                </TouchableOpacity>
+            </View>
+
+            {/* 渲染拼音按钮 */}
             {pinyinGroups.map((group) => (
                 <View key={group.label} style={styles.groupContainer}>
-                    {/* 分组标题 */}
                     <Text style={styles.groupLabel}>{group.label}</Text>
-
-                    {/* 该组的生母按钮 */}
                     <View style={styles.groupRow}>
                         {group.initials.map((initial) => {
                             const isSelected = selectedInitials.includes(initial);
@@ -54,7 +95,11 @@ const PinyinSelector = ({
                                     key={initial}
                                     style={[
                                         styles.pinyinButton,
-                                        { backgroundColor: isSelected ? '#2980b9' : '#bdc3c7' }
+                                        {
+                                            backgroundColor: isSelected
+                                                ? '#2980b9'
+                                                : '#bdc3c7',
+                                        },
                                     ]}
                                     onPress={() => handlePress(initial)}
                                 >
@@ -71,8 +116,30 @@ const PinyinSelector = ({
 
 export default PinyinSelector;
 
-// ============ 样式表(可单独，也可复用父组件) ============
+// 样式表
 const styles = StyleSheet.create({
+    buttonGroup: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginBottom: 15,
+    },
+    switchButton: {
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        marginHorizontal: 5,
+        borderRadius: 6,
+        backgroundColor: '#bdc3c7',
+    },
+    activeButton: {
+        backgroundColor: '#2980b9',
+    },
+    switchButtonText: {
+        color: '#fff',
+        fontWeight: 'bold',
+    },
+    activeButtonText: {
+        color: '#fff',
+    },
     groupContainer: {
         marginBottom: 10,
     },

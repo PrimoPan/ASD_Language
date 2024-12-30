@@ -1,5 +1,4 @@
-// CreateChildren.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,50 +6,49 @@ import {
   TouchableOpacity,
   Alert,
   StyleSheet,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 
 import useStore from '../store/store';
 import { useNavigation } from '@react-navigation/native';
-
-// ========== 新增：导入我们抽象出的声母选择组件 ==========
 import PinyinSelector from '../Components/PinyinSelector';
 
-const CreateChildren = ({ navigation }) => {
-  // 如果需要 store
+const CreateChildren = () => {
+  const navigation = useNavigation();
+  const currentChildren = useStore((state) => state.currentChildren);
   const setCurrentChildren = useStore((state) => state.setCurrentChildren);
 
-  // ============ 个人信息 ============
-  const [name, setName] = useState('');
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
-  const [courseDuration, setCourseDuration] = useState('');
+  // 初始化表单状态，使用 store 中的数据（如果有）
+  const [name, setName] = useState(currentChildren?.name || '');
+  const [age, setAge] = useState(currentChildren?.age || '');
+  const [gender, setGender] = useState(currentChildren?.gender || '');
+  const [courseDuration, setCourseDuration] = useState(
+      currentChildren?.courseDuration || ''
+  );
 
-  // ============ 强化物相关 ============
-  const [reinforcements, setReinforcements] = useState([]);
-
-  // ============ 里程碑数值 ============
-  const [naming, setNaming] = useState('');
-  const [languageStructure, setLanguageStructure] = useState('');
-  const [dialogue, setDialogue] = useState('');
-
-  // ============ 生母选择（由子组件渲染） ============
-  // 父组件仅维护选中列表，不关心每个按钮具体如何渲染
-  const [selectedInitials, setSelectedInitials] = useState([]);
+  const [reinforcements, setReinforcements] = useState(
+      currentChildren?.reinforcements || []
+  );
+  const [naming, setNaming] = useState(currentChildren?.['命名'] || '');
+  const [languageStructure, setLanguageStructure] = useState(
+      currentChildren?.['语言结构'] || ''
+  );
+  const [dialogue, setDialogue] = useState(currentChildren?.['对话'] || '');
+  const [selectedInitials, setSelectedInitials] = useState(
+      currentChildren?.selectedInitials || []
+  );
 
   // 添加强化物
   const addReinforcement = () => {
     setReinforcements([...reinforcements, { id: Date.now(), value: '' }]);
   };
 
-  // 删除强化物
   const removeReinforcement = (id) => {
-    setReinforcements(reinforcements.filter(item => item.id !== id));
+    setReinforcements(reinforcements.filter((item) => item.id !== id));
   };
 
-  // 更新强化物内容
   const updateReinforcement = (id, value) => {
-    const updated = reinforcements.map(item => {
+    const updated = reinforcements.map((item) => {
       if (item.id === id) {
         return { ...item, value };
       }
@@ -59,7 +57,6 @@ const CreateChildren = ({ navigation }) => {
     setReinforcements(updated);
   };
 
-  // 提交
   const handleSubmit = () => {
     const formData = {
       name,
@@ -67,32 +64,23 @@ const CreateChildren = ({ navigation }) => {
       gender,
       courseDuration,
       reinforcements,
-      // 对应 JSON 文件中的键
-      "命名": naming,
-      "语言结构": languageStructure,
-      "对话": dialogue,
-      // 把选中的生母也带上
-      selectedInitials
+      '命名': naming,
+      '语言结构': languageStructure,
+      '对话': dialogue,
+      selectedInitials,
     };
 
-    console.log('提交的数据:', formData);
     Alert.alert('提交成功', JSON.stringify(formData, null, 2));
-
-    // 如果要存到 store
-    setCurrentChildren(formData);
-    navigation.replace('LearningMode')
-    // 跳转到新页面
+    setCurrentChildren(formData); // 更新 store
+    navigation.replace('LearningMode'); // 跳转到 LearningMode 页面
   };
 
-  // 必填项没填完时禁用提交
   const isSubmitDisabled = !name || !age || !gender || !courseDuration;
 
   return (
       <View style={styles.container}>
         {/* 左侧：个人信息 & 强化物 */}
         <View style={styles.leftColumn}>
-
-          {/* 个人信息 */}
           <View style={styles.card}>
             <Text style={styles.cardHeader}>个人信息</Text>
             <View style={styles.row}>
@@ -110,7 +98,6 @@ const CreateChildren = ({ navigation }) => {
                   style={[styles.input, { flex: 1 }]}
               />
             </View>
-
             <View style={styles.row}>
               <Text style={[styles.label, { marginRight: 5 }]}>性别:</Text>
               <View style={styles.radioGroup}>
@@ -123,7 +110,6 @@ const CreateChildren = ({ navigation }) => {
                   </View>
                   <Text style={styles.radioLabel}>男</Text>
                 </TouchableOpacity>
-
                 <TouchableOpacity
                     style={styles.radioOption}
                     onPress={() => setGender('female')}
@@ -134,7 +120,6 @@ const CreateChildren = ({ navigation }) => {
                   <Text style={styles.radioLabel}>女</Text>
                 </TouchableOpacity>
               </View>
-
               <TextInput
                   placeholder="课程周期"
                   value={courseDuration}
@@ -143,12 +128,9 @@ const CreateChildren = ({ navigation }) => {
               />
             </View>
           </View>
-
-          {/* 强化物 */}
           <View style={[styles.card, { marginTop: 20 }]}>
             <Text style={styles.cardHeader}>强化物</Text>
-
-            {reinforcements.map(item => (
+            {reinforcements.map((item) => (
                 <View key={item.id} style={[styles.row, { marginBottom: 10 }]}>
                   <TextInput
                       placeholder="输入强化物"
@@ -172,10 +154,8 @@ const CreateChildren = ({ navigation }) => {
 
         {/* 右侧：里程碑 + 声母选择 */}
         <View style={styles.rightColumn}>
-          {/* 里程碑记录 */}
           <View style={styles.card}>
             <Text style={styles.cardHeader}>里程碑记录</Text>
-
             <Text style={[styles.label, { marginTop: 10 }]}>命名</Text>
             <TextInput
                 placeholder="请输入数值"
@@ -184,7 +164,6 @@ const CreateChildren = ({ navigation }) => {
                 style={[styles.input, { width: '40%' }]}
                 keyboardType="numeric"
             />
-
             <Text style={[styles.label, { marginTop: 10 }]}>语言结构</Text>
             <TextInput
                 placeholder="请输入数值"
@@ -193,7 +172,6 @@ const CreateChildren = ({ navigation }) => {
                 style={[styles.input, { width: '40%' }]}
                 keyboardType="numeric"
             />
-
             <Text style={[styles.label, { marginTop: 10 }]}>对话</Text>
             <TextInput
                 placeholder="请输入数值"
@@ -203,14 +181,12 @@ const CreateChildren = ({ navigation }) => {
                 keyboardType="numeric"
             />
           </View>
-
-          {/* 使用我们抽象的子组件 */}
           <View style={[styles.card, { marginTop: 20 }]}>
             <Text style={styles.cardHeader}>需要学习的生母（最多选3）</Text>
             <PinyinSelector
                 selectedInitials={selectedInitials}
                 onSelectedInitialsChange={setSelectedInitials}
-                maxCount={3} // 最多可选3个
+                maxCount={3}
             />
           </View>
         </View>
@@ -218,7 +194,10 @@ const CreateChildren = ({ navigation }) => {
         {/* 提交按钮 */}
         <View style={styles.submitContainer}>
           <TouchableOpacity
-              style={[styles.submitButton, isSubmitDisabled && styles.submitButtonDisabled]}
+              style={[
+                styles.submitButton,
+                isSubmitDisabled && styles.submitButtonDisabled,
+              ]}
               onPress={!isSubmitDisabled ? handleSubmit : null}
           >
             <Text style={styles.submitText}>提 交</Text>
@@ -229,6 +208,7 @@ const CreateChildren = ({ navigation }) => {
 };
 
 export default CreateChildren;
+
 
 // ============= 样式表（可与之前相同） ===========
 const screenWidth = Dimensions.get('window').width;
