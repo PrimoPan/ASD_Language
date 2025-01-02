@@ -7,9 +7,12 @@ import { View, Text } from 'react-native';
 import Opening from './SourceCode/Opening/Opening';
 import Login from './SourceCode/Login/Login';
 import CreateChildren from './SourceCode/Createchildren/index.jsx';  // 引入 CreateChildren 组件
+import DisplayStoreData from "./SourceCode/DisplayStoreData";
 import GptTest from "./SourceCode/Components/GptTest";
 import ImageGenerator from "./SourceCode/Components/ImageGenerator"
 import LearningMode from "./SourceCode/LearningMode/LearningMode";
+import EnvironmentChoose from "./SourceCode/EnvironmentChoose";
+import GptLearning from "./SourceCode/GptLearning";
 import useStore from './SourceCode/store/store'; // 引入 zustand store
 
 const Stack = createNativeStackNavigator();
@@ -26,6 +29,9 @@ const App = () => {
                 <Stack.Screen name="GptTest" component={GptTest}/>
                 <Stack.Screen name="ImageGenerator" component={ImageGenerator}/>
                 <Stack.Screen name='LearningMode' component={LearningMode}/>
+                <Stack.Screen name='EnvironmentChoose' component={EnvironmentChoose}/>
+                <Stack.Screen name='GptLearning' component={GptLearning}/>
+                <Stack.Screen name='DisplayStoreData' component={DisplayStoreData}/>
             </Stack.Navigator>
         </NavigationContainer>
     );

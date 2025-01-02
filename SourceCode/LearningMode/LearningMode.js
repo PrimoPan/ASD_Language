@@ -105,6 +105,7 @@ const LearningMode = () => {
         });
 
         Alert.alert('提交的学习目标', JSON.stringify(learningGoals, null, 2));
+        navigation.navigate('EnvironmentChoose');
     };
 
 

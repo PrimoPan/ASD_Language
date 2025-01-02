@@ -1,26 +1,28 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, StyleSheet, Text, ScrollView, Alert } from 'react-native';
-import axios from 'axios';
+import { View, Button, StyleSheet, Text, ScrollView, Image, Alert } from 'react-native';
+import { gptQuery, generateImage } from '../../utils/api'; // 引入封装的接口
 
 const GptTest = () => {
-    const [inputText, setInputText] = useState(''); // 输入框内容
-    const [outputText, setOutputText] = useState(''); // 输出框内容
+    const [imagesData, setImagesData] = useState([]); // 图片和描述的数据数组
     const [loading, setLoading] = useState(false); // 加载状态
 
-    const handleTest = async () => {
-        if (!inputText.trim()) {
-            Alert.alert('错误', '请输入问题！');
-            return;
-        }
+    const handleGenerate = async () => {
         setLoading(true);
         try {
-            const response = await axios.post('http://47.242.78.104:6088/i/gpt', {
-                uid: 'a81s', // 替换为实际用户 ID
-                qus: inputText,
-            });
-            setOutputText(response.data.data || '无返回内容');
+            // 调用 GPT 接口生成描述
+            const prompt = "生成三个描述，每个描述用于图片生成。";
+            const response = await gptQuery(prompt);
+            const descriptions = JSON.parse(response)?.response || [];
+
+            // 调用图片生成接口为每个描述生成图片
+            const imagePromises = descriptions.map((desc) =>
+                generateImage(desc.描述).then((url) => ({ ...desc, imageUrl: url }))
+            );
+            const generatedImages = await Promise.all(imagePromises);
+
+            setImagesData(generatedImages);
         } catch (error) {
-            Alert.alert('错误', error.message || '接口请求失败');
+            Alert.alert('错误', error.message || '生成失败');
         } finally {
             setLoading(false);
         }
@@ -28,19 +30,18 @@ const GptTest = () => {
 
     return (
         <View style={styles.container}>
-            {/* 输入框 */}
-            <TextInput
-                style={styles.input}
-                placeholder="请输入测试问题"
-                value={inputText}
-                onChangeText={setInputText}
-                editable={!loading}
+            <Button
+                title={loading ? '处理中...' : '生成图片和描述'}
+                onPress={handleGenerate}
+                disabled={loading}
             />
-            {/* 提交按钮 */}
-            <Button title={loading ? '提交中...' : '提交'} onPress={handleTest} disabled={loading} />
-            {/* 输出框 */}
-            <ScrollView style={styles.outputContainer}>
-                <Text style={styles.outputText}>{outputText}</Text>
+            <ScrollView contentContainerStyle={styles.scrollContainer}>
+                {imagesData.map((item, index) => (
+                    <View key={index} style={styles.card}>
+                        <Image source={{ uri: item.imageUrl }} style={styles.image} resizeMode="contain" />
+                        <Text style={styles.description}>{item.描述}</Text>
+                    </View>
+                ))}
             </ScrollView>
         </View>
     );
@@ -52,27 +53,30 @@ const styles = StyleSheet.create({
         padding: 16,
         backgroundColor: '#f5f5f5',
     },
-    input: {
+    scrollContainer: {
+        alignItems: 'center',
+        paddingVertical: 16,
+    },
+    card: {
+        marginBottom: 20,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        backgroundColor: '#fff',
+        alignItems: 'center',
+        width: '90%',
+    },
+    image: {
         width: '100%',
-        padding: 12,
-        borderWidth: 1,
-        borderColor: '#ccc',
+        height: 200,
         borderRadius: 8,
-        marginBottom: 16,
-        backgroundColor: '#fff',
+        marginBottom: 12,
     },
-    outputContainer: {
-        flex: 1,
-        marginTop: 16,
-        padding: 12,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 8,
-        backgroundColor: '#fff',
-    },
-    outputText: {
-        fontSize: 16,
+    description: {
+        fontSize: 14,
         color: '#333',
+        textAlign: 'center',
     },
 });
 
