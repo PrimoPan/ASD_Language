@@ -58,6 +58,8 @@ const CreateChildren = () => {
   };
 
   const handleSubmit = () => {
+    const currentTime = new Date().toISOString(); // 动态生成当前时间
+
     const formData = {
       name,
       age,
@@ -68,12 +70,14 @@ const CreateChildren = () => {
       '语言结构': languageStructure,
       '对话': dialogue,
       selectedInitials,
+      createdAt: currentTime, // 添加创建时间字段
     };
 
     Alert.alert('提交成功', JSON.stringify(formData, null, 2));
     setCurrentChildren(formData); // 更新 store
     navigation.replace('LearningMode'); // 跳转到 LearningMode 页面
   };
+
 
   const isSubmitDisabled = !name || !age || !gender || !courseDuration;
 
