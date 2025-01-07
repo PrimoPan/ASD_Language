@@ -5,7 +5,6 @@ import { gptQuery, generateImage } from '../../utils/api'; // 引入封装的接
 const GptTest = () => {
     const [imagesData, setImagesData] = useState([]); // 图片和描述的数据数组
     const [loading, setLoading] = useState(false); // 加载状态
-
     const handleGenerate = async () => {
         setLoading(true);
         try {
