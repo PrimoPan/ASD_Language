@@ -1,0 +1,15 @@
+.styleButton {
+  border-radius: 17px 17px 17px 0;
+  background-color: rgba(57, 184, 255, 0.3);
+  padding: 9px 31px 15px;
+  color: rgba(0, 0, 0, 1);
+  text-align: center;
+  font: 500 13px PingFang SC, -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+@media (max-width: 991px) {
+  .styleButton {
+    white-space: initial;
+    padding: 0 20px;
+  }
+}

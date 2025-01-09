@@ -1,0 +1,199 @@
+.container {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: start;
+}
+
+.title {
+  color: rgba(28, 91, 131, 1);
+  font: 500 18px PingFang SC, -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+.contentWrapper {
+  align-self: stretch;
+  margin-top: 50px;
+}
+
+.profileGrid {
+  gap: 20px;
+  display: flex;
+}
+
+.avatarColumn {
+  display: flex;
+  flex-direction: column;
+  line-height: normal;
+  width: 23%;
+}
+
+.avatarSection {
+  display: flex;
+  flex-grow: 1;
+  flex-direction: column;
+  font-family: PingFang SC, sans-serif;
+  font-weight: 500;
+}
+
+.uploadAvatar {
+  background-color: rgba(255, 255, 255, 1);
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 14px;
+  color: rgba(57, 184, 255, 1);
+  text-align: center;
+  width: 112px;
+  height: 112px;
+  padding: 38px 22px;
+}
+
+.uploadIcon {
+  aspect-ratio: 0.95;
+  object-fit: contain;
+  object-position: center;
+  width: 19px;
+}
+
+.uploadText {
+  margin-top: 4px;
+}
+
+.stylePreference {
+  color: rgba(28, 91, 131, 1);
+  font-size: 18px;
+  margin-top: 49px;
+}
+
+.infoColumn {
+  display: flex;
+  flex-direction: column;
+  line-height: normal;
+  width: 77%;
+  margin-left: 20px;
+}
+
+.infoSection {
+  display: flex;
+  margin-top: 15px;
+  width: 100%;
+  flex-direction: column;
+  color: rgba(28, 91, 131, 1);
+  font: 18px PingFang SC, sans-serif;
+}
+
+.infoRow {
+  display: flex;
+  width: 100%;
+  gap: 20px;
+  justify-content: space-between;
+  margin-top: 17px;
+}
+
+.infoField {
+  border-radius: 25px;
+  background-color: rgba(255, 255, 255, 1);
+  font-weight: 400;
+  padding: 5px 10px 12px;
+}
+
+.ageWrapper {
+  border-radius: 25px;
+  background-color: rgba(255, 255, 255, 1);
+  display: flex;
+  align-items: start;
+  gap: 40px 46px;
+  padding: 5px 10px 12px;
+}
+
+.ageUnit {
+  font-weight: 500;
+}
+
+.genderWrapper {
+  border-radius: 25px;
+  background-color: rgba(255, 255, 255, 1);
+  display: flex;
+  align-items: start;
+  gap: 40px 41px;
+  padding: 5px 11px 11px;
+}
+
+.genderIcon {
+  aspect-ratio: 1.5;
+  object-fit: contain;
+  object-position: center;
+  width: 12px;
+  margin-top: 10px;
+}
+
+.styleButtons {
+  display: flex;
+  margin-top: 31px;
+  width: 312px;
+  max-width: 100%;
+  gap: 16px;
+}
+
+.preferencesSection {
+  display: flex;
+  margin-top: 31px;
+  width: 131px;
+  max-width: 100%;
+  flex-direction: column;
+  color: rgba(255, 255, 255, 1);
+  font: 500 13px PingFang SC, -apple-system, Roboto, Helvetica, sans-serif;
+}
+
+.preferencesTitle {
+  color: rgba(28, 91, 131, 1);
+  font-size: 18px;
+  align-self: start;
+}
+
+@media (max-width: 991px) {
+  .container {
+    max-width: 100%;
+    margin-top: 40px;
+  }
+
+  .contentWrapper {
+    max-width: 100%;
+    margin-top: 40px;
+  }
+
+  .profileGrid {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+
+  .avatarColumn {
+    width: 100%;
+  }
+
+  .avatarSection {
+    margin-top: 21px;
+  }
+
+  .uploadAvatar {
+    padding: 0 20px;
+  }
+
+  .stylePreference {
+    margin: 40px 4px 0 0;
+  }
+
+  .infoColumn {
+    width: 100%;
+  }
+
+  .infoSection {
+    margin-top: 36px;
+  }
+
+  .infoField {
+    padding-right: 20px;
+  }
+}
