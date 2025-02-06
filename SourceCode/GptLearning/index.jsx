@@ -33,7 +33,7 @@ const GptLearning = () => {
 
                 // 为每个场景生成卡通风格图片
                 const imagePromises = scenes.map((scene) =>
-                    generateImage(`${scene.描述}，卡通风格`).then((url) => ({ ...scene, imageUrl: url }))
+                    generateImage(`绝对不允许出现文字。卡通风格。重要：场景尽量人物较少，不允许超过2个人，且全部为中国人，场景尽量较空，绝对不允许出现文字。以下是场景描述${scene.描述}`).then((url) => ({ ...scene, imageUrl: url }))
                 );
                 const generatedScenes = await Promise.all(imagePromises);
                 setScenesData(generatedScenes);

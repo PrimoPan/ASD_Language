@@ -60,8 +60,9 @@ export const generateImage = async (description) => {
                 },
             }
         );
-
+        console.log('生图prompt:',description);
         const { data } = response.data;
+        console.log(response.data);
         if (!data) {
             throw new Error('接口未返回图片 URL');
         }

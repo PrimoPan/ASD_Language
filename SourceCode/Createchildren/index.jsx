@@ -41,6 +41,7 @@ const CreateChildren = () => {
   const [selectedInitials, setSelectedInitials] = useState(
       currentChildren?.selectedInitials || []
   );
+  const [imageStyle, setImageStyle] = useState(currentChildren?.imageStyle || '');
 
   // 图片占位
   const [childImage, setChildImage] = useState(currentChildren?.childImage || '');
@@ -232,9 +233,51 @@ const CreateChildren = () => {
                     onChangeText={setCourseDuration}
                     style={[styles.input, { flex: 1, marginLeft: 10 }]}
                 />
+
               </View>
             </View>
+            <View style={styles.card}>
+              <Text style={[styles.label, { marginRight: 5 }]}>图片风格:</Text>
+              <View style={styles.radioGroup}>
+                <TouchableOpacity
+                    style={styles.radioOption}
+                    onPress={() => setImageStyle('realistic')}
+                >
+                  <View
+                      style={[
+                        styles.radioCircle,
+                        imageStyle === 'realistic' && { borderColor: '#2980b9' },
+                      ]}
+                  >
+                    {imageStyle === 'realistic' && (
+                        <View
+                            style={[styles.radioSelected, { backgroundColor: '#2980b9' }]}
+                        />
+                    )}
+                  </View>
+                  <Text style={styles.radioLabel}>写实风格</Text>
+                </TouchableOpacity>
 
+                <TouchableOpacity
+                    style={styles.radioOption}
+                    onPress={() => setImageStyle('cartoon')}
+                >
+                  <View
+                      style={[
+                        styles.radioCircle,
+                        imageStyle === 'cartoon' && { borderColor: '#2980b9' },
+                      ]}
+                  >
+                    {imageStyle === 'cartoon' && (
+                        <View
+                            style={[styles.radioSelected, { backgroundColor: '#2980b9' }]}
+                        />
+                    )}
+                  </View>
+                  <Text style={styles.radioLabel}>卡通风格</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
             {/* 3. 强化物偏好 */}
             <View style={[styles.card]}>
               <Text style={styles.cardHeader}>强化物偏好</Text>
