@@ -17,18 +17,42 @@ const { width, height } = Dimensions.get('window');
 const HorizontalLayout = () => {
     const navigation = useNavigation();
     const { name } = useStore(state => state.currentChildren);
+    const { learningGoals, setLearningGoals } = useStore();
     const [selectedBox, setSelectedBox] = useState(null);
     const [selectedTheme, setSelectedTheme] = useState("学习主题");
     const [selectedMajor, setSelectMajor] = useState(null);
     const [currentStep, setCurrentStep] = useState(0); // Add state to track the current step
     const Models=['学习主题','主题场景','构音模块','命名模块','语言结构模块','对话模块'];
+    const [activity, setActivity] = useState(null);
+    const [backgroundUrl, setBackgroundUrl] = useState(null);
     const handleNextStep = () => {
+        // 添加验证逻辑
+        if (currentStep === 1) {
+            // 验证逻辑
+            if (!activity || !backgroundUrl) {
+                Alert.alert("提示", "请先选择场景并生成图片");
+                return;
+            }
+
+            // 更新learningGoals
+            const updatedGoals = {
+                ...learningGoals,
+                主题场景: {
+                    major: selectedMajor,
+                    activity: activity,
+                    background: backgroundUrl
+                }
+            };
+            setLearningGoals(updatedGoals);
+            console.log('Updated Learning Goals:', updatedGoals);
+        }
+
         setCurrentStep(prevStep => {
             const nextStep = prevStep + 1;
-            console.log('next', nextStep); // 在这里打印 nextStep
-            return nextStep > 6 ? 0 : nextStep; // Reset to 0 after step 6
+            return nextStep > 6 ? 0 : nextStep;
         });
     };
+
 
     const handleLast = () => {
         if (currentStep === 0) {
@@ -43,15 +67,12 @@ const HorizontalLayout = () => {
     };
     useEffect(()=>{
         setSelectedTheme(Models[currentStep]);
-        console.log('改变',currentStep);
     },[currentStep])
     const handleSelectBox = (index) => {
-        console.log('Selected Box:', index);
         setSelectedBox(index);
     };
 
     const handleSelectMajor = (Major) => {
-        console.log(Major);
         setSelectMajor(Major);
     };
 
@@ -81,7 +102,13 @@ const HorizontalLayout = () => {
 
             {/* Render content based on current step */}
             {currentStep === 1 && (
-                <ThemeScene selectedMajor={selectedMajor} />
+                <ThemeScene
+                    selectedMajor={selectedMajor}
+                    onSelectScene={(scene, url) => {
+                        setActivity(scene);
+                        setBackgroundUrl(url);
+                    }}
+                />
             )}
             {currentStep === 2 && (
                 <PronunciationModule />
@@ -114,8 +141,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     rectangle75: {
-        width: 1920 * 0.65,
-        height: 560,
+        width: '90%',
+        height: '59%',
         backgroundColor: 'white',
         borderRadius: 40,
         position: 'absolute',
@@ -123,7 +150,7 @@ const styles = StyleSheet.create({
         left: '5%',
     },
     title: {
-        fontSize: 18,
+        fontSize: 15,
         color: '#1C5B83',
         fontWeight: '500',
         position: 'absolute',
@@ -160,7 +187,7 @@ const styles = StyleSheet.create({
         fontWeight: '500',
         position: 'absolute',
         top: 17,
-        left: 1044,
+        left: '80%',
     },
     selectPrompt: {
         fontSize: 16,

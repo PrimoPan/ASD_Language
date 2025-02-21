@@ -22,22 +22,13 @@ const useStore = create((set, get) => ({
         });
     },
 
-    // ============== learningGoals 相关 ==============
-    /*
-        历史遗留问题，教学目标中的构音需要和currentChildren里的selectedInitials相统一
-     */
     learningGoals: null,
     setLearningGoals: (data) => {
-        console.log("debug",data);
         const oldData = get().learningGoals;
+        console.log('debugg',data);
         if (JSON.stringify(oldData) === JSON.stringify(data)) return;
-        set({
-            learningGoals: {
-                ...data,
-                构音: data.构音 ?? get().currentChildren?.selectedInitials?.join(', ') ?? '无',
-            },
-        });
-    },
+        set({ learningGoals: data });
+    }
 }));
 
 export default useStore;

@@ -58,6 +58,14 @@ const ThemeSelection = ({ selectedBox, handleSelectBox, handleSelectMajor }) => 
         const themes = await generateInterestThemes(selected);
         setInterestThemes(themes);
     };
+    const [freeThemeText, setFreeThemeText] = useState('');
+
+    // 新增effect监听自由主题状态变化
+    useEffect(() => {
+        if (selectedBox === '自由主题') {
+            handleSelectMajor(freeThemeText);
+        }
+    }, [freeThemeText, selectedBox]);
 
 // 在useEffect中初始化
     useEffect(() => {
@@ -128,7 +136,12 @@ const ThemeSelection = ({ selectedBox, handleSelectBox, handleSelectMajor }) => 
                     placeholder="请输入内容"
                     multiline
                     numberOfLines={4}
-                    onFocus={() => handleSelectBox('自由主题')}
+                    value={freeThemeText}
+                    onChangeText={setFreeThemeText}
+                    onFocus={() => {
+                        handleSelectBox('自由主题');
+                        handleSelectMajor(freeThemeText);
+                    }}
                 />
             </View>
         </View>

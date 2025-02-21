@@ -25,8 +25,6 @@ const PronunciationModule = ({ selectedModule, navigation }) => {
             break; // Stop once the first unmatched pinyin is found
         }
     }
-
-    console.log(pinyin);
     // 加载时保存状态
     useEffect(() => {
         const loadSavedData = async () => {
@@ -58,7 +56,7 @@ const PronunciationModule = ({ selectedModule, navigation }) => {
     // 向 GPT 请求教学目标
     const fetchTeachingGoal = async () => {
         try {
-            const prompt = `(给出的答案不需要出现<>等标题,假设你是一个中文自闭症语言教学专家，现在根据我给出的这几个辅音，请你给我生成一个本次教学的教学目标，注意是教学目标，不是具体单词：${pinyin}`;
+            const prompt = `(给出的答案不需要出现<>等标题,假设你是一个中文自闭症语言教学专家，现在根据我给出的这个辅音，请你给我生成一个本次教学的教学目标，注意是教学目标，不是具体单词：${pinyin}`;
             const result = await gptQuery(prompt); // 使用 gptQuery 接口请求教学目标
             setTeachingGoal(result);
         } catch (error) {
@@ -69,7 +67,7 @@ const PronunciationModule = ({ selectedModule, navigation }) => {
     // 向 GPT 请求生成适用于场景教学的中文单词及拼音
     const fetchTeachingWords = async () => {
         try {
-            const prompt = `每次生成的答案不允许与上次一样。直接给我一个以{}包裹的对象，字符串形式，不需要json格式，里面只包含4个词语（注意是词语，要与孩子的日常生活相关），给出如下几个辅音：${pinyin},现在根据我给出的这几个辅音，生成4个适用于场景教学的中文单词，并给出拼音,每个单词的格式是词语（拼音），以,分割`;
+            const prompt = `请一定使用带有${pinyin}辅音的拼音。我们的教学场景是${Goals?.主题场景?.major},${Goals?.主题场景?.activity}。所以你接下来生成的词语一定要和之前这些场景有关。具体场景是每次生成的答案不允许与上次一样。直接给我一个以{}包裹的对象，字符串形式，不需要json格式，里面只包含4个词语（注意是词语，要与孩子的日常生活相关），给出如下几个辅音：${pinyin},现在根据我给出的这几个辅音，生成4个适用于场景教学的中文单词，并给出拼音,每个单词的格式是词语（拼音），以,分割`;
             const result = await gptQuery(prompt); // 使用 gptQuery 接口请求中文单词
 
             // 修复第一个单词的格式问题，并将返回的字符串按逗号分割
@@ -237,8 +235,8 @@ const PronunciationModule = ({ selectedModule, navigation }) => {
 
 const styles = StyleSheet.create({
     container: {
-        width: 1920 * 0.65,
-        height: 560,
+        width: '90%',
+        height: '57%',
         backgroundColor: 'white',
         borderRadius: 40,
         position: 'absolute',
@@ -249,17 +247,16 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     title: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 'bold',
         color: '#1C5B83',
         textAlign: 'center',
-        marginBottom: 10,
+        marginBottom: 5,
     },
     button: {
         backgroundColor: '#39B8FF',
         paddingVertical: 8,
         paddingHorizontal: 20,
-        marginTop: 5,
         borderRadius: 8,
         alignItems: 'center',
     },
@@ -271,10 +268,10 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'center',
         marginHorizontal: 10, // 控制按钮之间的间距
-        marginBottom: 5,
+        marginBottom: 2,
     },
     wordText: {
-        fontSize: 15,
+        fontSize: 12,
         color: '#1C5B83',
         textAlign: 'center',
         marginTop: 5,
@@ -287,8 +284,8 @@ const styles = StyleSheet.create({
         marginTop: 5,
     },
     image: {
-        width: 200,
-        height: 200,
+        width: 150,
+        height: 150,
         marginBottom: 10,
         borderRadius: 8,
     },
@@ -322,7 +319,7 @@ const styles = StyleSheet.create({
     moduleContainer: {
         width: '100%',
         padding: 20,
-        marginTop: 20,
+        marginTop: 10,
         backgroundColor: 'rgba(57, 184, 255, 0.1)',
         borderRadius: 10,
         alignItems: 'center',

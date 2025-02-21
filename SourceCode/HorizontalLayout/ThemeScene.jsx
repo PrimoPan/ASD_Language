@@ -1,72 +1,129 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image, TextInput, Button, Alert, ActivityIndicator } from 'react-native';
-import { generateImage } from '../utils/api';
+import { generateImage, gptQuery } from '../utils/api';
 const environmentData = require('../Knowledge/Environment.json');
-const ThemeScene = ({ selectedModule,selectedMajor }) => {
-    const [imageUrl, setImageUrl] = useState(null); // 存储生成的图片 URL
-    const [customDescription, setCustomDescription] = useState(''); // 用户自定义的场景描述
-    const [selectedScene, setSelectedScene] = useState(null); // 存储当前选中的场景
-    const [loading, setLoading] = useState(false); // 控制 loading 状态
-    console.log(selectedMajor);
 
-    // 选择场景按钮的回调
+const ThemeScene = ({ selectedMajor, onSelectScene }) => {
+    const [imageUrl, setImageUrl] = useState(null);
+    const [customDescription, setCustomDescription] = useState('');
+    const [selectedScene, setSelectedScene] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [availableScenes, setAvailableScenes] = useState([]); // 合并后的场景列表
+
+    // 解析GPT返回的场景数组
+    const parseGeneratedScenes = (response) => {
+        try {
+            const match = response.match(/\[.*?\]/);
+            if (!match) throw new Error('Invalid response format');
+            return JSON.parse(match[0].replace(/'/g, '"'));
+        } catch (e) {
+            throw new Error('Failed to parse scenes');
+        }
+    };
+
+    // 加载场景数据
+    const loadScenes = async () => {
+        setLoading(true);
+        try {
+            // 先检查静态数据
+            let scenes = environmentData[selectedMajor] || [];
+
+            // 如果没有静态数据则生成
+            if (scenes.length === 0) {
+                const prompt = `作为自闭症教学专家，请生成三个与${selectedMajor}相关的教学场景，返回格式如['场景1','场景2','场景3']：`;
+                const gptResponse = await gptQuery(prompt);
+                const dynamicScenes = parseGeneratedScenes(gptResponse);
+                scenes = dynamicScenes;
+            }
+
+            setAvailableScenes(scenes);
+        } catch (error) {
+            Alert.alert("错误", error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 当专业变化时重新加载场景
+    useEffect(() => {
+        if (selectedMajor) {
+            loadScenes();
+        }
+    }, [selectedMajor]);
+
+    // 处理场景选择
     const handleSelectScene = async (scene) => {
-        setSelectedScene(scene); // 更新选中的场景
-        setLoading(true); // 设置 loading 为 true
         try {
-            const description = `你是一个自闭症教学老师，我现在需要您生成一张背景图。注意作为背景图，它不应该过于复杂，有太多元素，因为之后我们需要儿童在图上添加元素。背景图的发生场景是${selectedMajor}，具体场景是${scene}`;
-            const image = await generateImage(description); // 调用生成图片接口
-            setImageUrl(image); // 更新图片 URL
+            setSelectedScene(scene);
+            const description = `自闭症教学背景图，主题：${selectedMajor}，场景：${scene}，简洁风格，留白区域`;
+            const image = await generateImage(description);
+            setImageUrl(image);
+            onSelectScene(scene, image); // 触发父组件回调
         } catch (error) {
-            Alert.alert("Error", error.message); // 处理错误并显示提示
+            Alert.alert("错误", error.message);
         } finally {
-            setLoading(false); // 完成后关闭 loading
+            setLoading(false);
         }
     };
-
-    // 重新生成图像的回调
     const handleRegenerateImage = async () => {
-        setLoading(true); // 设置 loading 为 true
+        if (!customDescription.trim()) return;
+
         try {
-            const description = customDescription.trim()  // 默认使用收银台描述
-            const image = await generateImage(description); // 调用生成图片接口
-            setImageUrl(image); // 更新图片 URL
+            setSelectedScene(customDescription);
+            const image = await generateImage(customDescription);
+            setImageUrl(image);
+            onSelectScene(customDescription, image); // 触发父组件回调
         } catch (error) {
-            Alert.alert("Error", error.message); // 处理错误并显示提示
+            Alert.alert("错误", error.message);
         } finally {
-            setLoading(false); // 完成后关闭 loading
+            setLoading(false);
         }
     };
+    // 渲染场景按钮
+    const renderSceneButtons = () => {
+        if (loading) {
+            return <ActivityIndicator size="small" color="#39B8FF" />;
+        }
 
+        return availableScenes.map((scene) => (
+            <TouchableOpacity
+                key={scene}
+                style={[
+                    styles.button,
+                    selectedScene === scene && styles.selectedButton,
+                ]}
+                onPress={() => handleSelectScene(scene)}
+            >
+                <Text style={styles.buttonText}>{`场景：${scene}`}</Text>
+            </TouchableOpacity>
+        ));
+    };
+    useEffect(() => {
+        setSelectedScene(null);
+        setImageUrl(null);
+    }, [selectedMajor]);
     return (
         <View style={styles.container}>
             <View style={styles.leftContainer}>
                 <Text style={styles.title}>选择场景</Text>
-                {/* 圆角矩阵包裹左侧按钮 */}
-                {environmentData[selectedMajor]?.map((scene) => (
-                    <TouchableOpacity
-                        key={scene}
-                        style={[
-                            styles.button,
-                            selectedScene === scene && styles.selectedButton, // 高亮选中的按钮
-                        ]}
-                        onPress={() => handleSelectScene(scene)}
-                    >
-                        <Text style={styles.buttonText}>{`场景：${scene}`}</Text>
-                    </TouchableOpacity>
-                ))}
-                {/* 用户自定义输入框 */}
+                {renderSceneButtons()}
+
+                {/* 自定义输入部分 */}
                 <TextInput
                     style={styles.inputBox}
                     placeholder="输入自定义场景描述"
                     value={customDescription}
                     onChangeText={setCustomDescription}
                 />
-                <Button title="重新生成图片" onPress={handleRegenerateImage} />
+                <Button
+                    title="重新生成图片"
+                    onPress={handleRegenerateImage}
+                    disabled={!customDescription.trim()}
+                />
             </View>
 
             <View style={styles.rightContainer}>
-                <Text style={styles.selectedModuleText}>当前模块: {selectedModule}</Text>
+                <Text style={styles.selectedModuleText}>当前模块: {selectedMajor}</Text>
                 {loading ? (
                     <ActivityIndicator size="large" color="#39B8FF" /> // 显示 loading 场景
                 ) : imageUrl ? (

@@ -23,7 +23,7 @@ const ModelSelect = ({ visible, onClose, onSubmit }) => {
     const containerWidth = width * 0.7;
     // 计算技能按钮宽度：容器内左右各留20内边距，按钮之间间隙20，总共减去40+20=60
     const skillButtonWidth = (containerWidth - 60) / 2;
-
+    const [submitting, setSubmitting] = useState(false);
     // 维护每个技能的选中状态
     const [selectedSkills, setSelectedSkills] = useState({
         命名: false,
@@ -46,6 +46,9 @@ const ModelSelect = ({ visible, onClose, onSubmit }) => {
         // 从 store 中获取 currentChildren 数据
         const { currentChildren } = useStore.getState();
 
+        if (submitting) return;
+        setSubmitting(true);
+        console.log(currentChildren);
         // 遍历所有技能，若被选中，则构造 data 对象
         Object.keys(selectedSkills).forEach((skill) => {
             if (selectedSkills[skill]) {
@@ -58,19 +61,13 @@ const ModelSelect = ({ visible, onClose, onSubmit }) => {
                 }
             }
         });
-
+        console.log('data',data);
         // 调用 store 中的 setLearningGoals 更新 learningGoals 状态
         const { setLearningGoals } = useStore.getState();
         setLearningGoals(data);
-        console.log(data);
-
-        if (onSubmit) {
-            onSubmit(selectedSkills);
-        }
+        onClose();
         navigation.navigate('HorizontalLayout');
-        if (onClose) {
-            onClose();
-        }
+        setSubmitting(false);
     };
 
     return (
