@@ -38,6 +38,3 @@ target 'AsdLanguage' do
     )
   end
 end
-
-
-

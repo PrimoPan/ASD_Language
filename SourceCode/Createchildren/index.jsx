@@ -96,10 +96,11 @@ const CreateChildren = () => {
       selectedInitials,
       createdAt: currentTime,
       childImage,
+      imageStyle
     };
     Alert.alert('提交成功', JSON.stringify(formData, null, 2));
     setCurrentChildren(formData);
-    navigation.replace('LearningMode');
+    navigation.replace('ChildProfileScreen');
   };
   const isSubmitDisabled = !name || !age || !gender || !courseDuration;
 
@@ -228,7 +229,7 @@ const CreateChildren = () => {
                 </View>
 
                 <TextInput
-                    placeholder="课程周期"
+                    placeholder="课程周期(周）"
                     value={courseDuration}
                     onChangeText={setCourseDuration}
                     style={[styles.input, { flex: 1, marginLeft: 10 }]}
@@ -323,7 +324,7 @@ const CreateChildren = () => {
 
             {/* 拼音组件 */}
             <View style={styles.card}>
-              <Text style={styles.cardHeader}>需要学习的生母（最多选3）</Text>
+              <Text style={styles.cardHeader}>已经掌握的声母</Text>
               <PinyinSelector
                   selectedInitials={selectedInitials}
                   onSelectedInitialsChange={setSelectedInitials}

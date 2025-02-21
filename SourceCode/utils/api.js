@@ -23,11 +23,12 @@ export const gptQuery = async (question) => {
             {
                 headers: {
                     'Content-Type': 'application/json',
-                },
+                }
             }
         );
         console.log(question);
         const { data } = response.data;
+        console.log(data);
         if (!data) {
             throw new Error('接口未返回回答');
         }
@@ -52,7 +53,7 @@ export const generateImage = async (description) => {
             `${BASE_URL}/i/pic`,
             {
                 uid: 'a81s', // 替换为后端提供的用户标识
-                picreq: description,
+                picreq: '场景尽量简单，如果出现人物确保都是中国小孩'+description,
             },
             {
                 headers: {

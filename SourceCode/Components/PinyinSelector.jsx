@@ -37,11 +37,11 @@ const PinyinSelector = ({
             onSelectedInitialsChange(newSelected);
             return;
         }
-        if (selectedInitials.length < maxCount) {
+        if (selectedInitials.length < 999999) {
             const newSelected = [...selectedInitials, initial];
             onSelectedInitialsChange(newSelected);
         } else {
-            Alert.alert('提示', `最多只能选择${maxCount}个生母`);
+            Alert.alert('提示', `最多只能选择${maxCount}个声母`);
         }
     };
 
