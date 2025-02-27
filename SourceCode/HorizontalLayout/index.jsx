@@ -25,6 +25,12 @@ const HorizontalLayout = () => {
     const Models=['学习主题','主题场景','构音模块','命名模块','语言结构模块','对话模块'];
     const [activity, setActivity] = useState(null);
     const [backgroundUrl, setBackgroundUrl] = useState(null);
+    const [Gy, setGy] = useState(null);
+    const handleGy = (data) =>{
+        setGy(data);
+        console.log('Gy:',data);
+    }
+
     const handleNextStep = () => {
         // 添加验证逻辑
         if (currentStep === 1) {
@@ -46,7 +52,18 @@ const HorizontalLayout = () => {
             setLearningGoals(updatedGoals);
             console.log('Updated Learning Goals:', updatedGoals);
         }
-
+        if (currentStep === 2)
+        {
+                if (Gy != null)
+                {
+                const updatedLearningGoals = {
+                    ...learningGoals,
+                    构音: Gy // 💡將發言模塊的數據存入 store
+                };
+                setLearningGoals(updatedLearningGoals);
+                console.log('已存儲發言教學目標:', updatedLearningGoals);
+            }
+        }
         setCurrentStep(prevStep => {
             const nextStep = prevStep + 1;
             return nextStep > 6 ? 0 : nextStep;
@@ -111,7 +128,7 @@ const HorizontalLayout = () => {
                 />
             )}
             {currentStep === 2 && (
-                <PronunciationModule />
+                <PronunciationModule handleGy={handleGy} />
             )}
             {currentStep === 3 && (
                 <Naming />

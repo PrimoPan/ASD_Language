@@ -14,11 +14,13 @@ export const gptQuery = async (question) => {
     }
 
     try {
+        console.log('debug:',question);
         const response = await axios.post(
             `${BASE_URL}/i/gpt`,
             {
-                uid: 'a81s', // 替换为后端提供的用户标识
+                uid: 'abcd', // 替换为后端提供的用户标识
                 qus: question,
+                newtalk:1,
             },
             {
                 headers: {
@@ -26,9 +28,7 @@ export const gptQuery = async (question) => {
                 }
             }
         );
-        console.log(question);
         const { data } = response.data;
-        console.log(data);
         if (!data) {
             throw new Error('接口未返回回答');
         }
