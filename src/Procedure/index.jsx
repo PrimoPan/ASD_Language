@@ -26,11 +26,19 @@ const Procedure = () => {
     const [activity, setActivity] = useState(null);
     const [backgroundUrl, setBackgroundUrl] = useState(null);
     const [Gy, setGy] = useState(null);
+    const [namingGoal, setnamingGoal] = useState(null);
+    const [LgGoal, setLgGoal] = useState(null);
+    // 处理目标选择的函数
+    const handlenamingGoal = (goal) => {
+        setnamingGoal(goal);
+    };
     const handleGy = (data) =>{
         setGy(data);
-        console.log('Gy:',data);
     }
-
+    const handleLgGoal = (goal) => {
+        setLgGoal(goal);
+        console.log(goal);
+    }
     const handleNextStep = () => {
         // 添加验证逻辑
         if (currentStep === 1) {
@@ -63,6 +71,36 @@ const Procedure = () => {
                 setLearningGoals(updatedLearningGoals);
                 console.log('已存儲發言教學目標:', updatedLearningGoals);
             }
+        }
+        if (currentStep === 3) {
+            if (namingGoal != null) {
+                const updatedLearningGoals = {
+                    ...learningGoals, // 保留现有的 learningGoals
+                    命名: {
+                        ...learningGoals.命名, // 保留现有的 "命名" 对象中的其他字段
+                        detail: namingGoal // 添加或更新 detail 字段
+                    }
+                };
+
+                // 更新 learningGoals 的状态
+                setLearningGoals(updatedLearningGoals);
+                console.log('已存儲命名教學目標:', updatedLearningGoals);
+            }
+        }
+        if (currentStep === 4){
+            if (LgGoal != null)
+            {
+                const updatedLearningGoals = {
+                    ...learningGoals, // 保留现有的 learningGoals
+                    语言结构: {
+                        ...learningGoals.语言结构, // 保留现有的 "命名" 对象中的其他字段
+                        detail: LgGoal // 添加或更新 detail 字段
+                    }
+                };
+                setLearningGoals(updatedLearningGoals);
+                console.log('已存儲命名教學目標:', updatedLearningGoals);
+            }
+
         }
         setCurrentStep(prevStep => {
             const nextStep = prevStep + 1;
@@ -131,10 +169,10 @@ const Procedure = () => {
                 <PronunciationModule handleGy={handleGy} />
             )}
             {currentStep === 3 && (
-                <Naming />
+                <Naming onSelectGoal={handlenamingGoal}/>
             )}
             {currentStep === 4 && (
-                <Language />
+                <Language onSelectGoal={handleLgGoal}/>
             )}
             {currentStep === 5 && (
                 <DH />

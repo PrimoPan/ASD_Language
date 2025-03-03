@@ -1,42 +1,46 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
-const GoalSectionLan = ({ title, code, description }) => {
-    const [isSelected, setIsSelected] = useState(false); // State to manage selection
-    const [editableDescription, setEditableDescription] = useState(description); // State for editable description
+const GoalSectionLan = ({ title, code, description, onPress }) => {
+    const [isSelected, setIsSelected] = useState(false);
+    const [editableDescription, setEditableDescription] = useState(description);
 
-    // Toggle selection on press
     const handlePress = () => {
         setIsSelected(!isSelected);
+        if (onPress) {
+            onPress(editableDescription);
+        }
     };
 
-    // Check if title is '自定义'
-    const isEditable = title === '自定义';
+    const handleDescriptionChange = (newDescription) => {
+        setEditableDescription(newDescription);
+        if (title === '自定义目标' && onPress) {
+            onPress(newDescription);
+        }
+    };
+
+    const isEditable = title === '自定义目标';
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>{title}</Text>
-            <TouchableOpacity onPress={handlePress} style={styles.contentContainer}>
+            <TouchableOpacity onPress={handlePress} style={styles.contentContainer} activeOpacity={1}>
                 <View
                     style={[
                         styles.codeContainer,
-                        isSelected && styles.selectedCodeContainer, // Apply highlighter style if selected
+                        isSelected && styles.selectedCodeContainer,
                     ]}
                 >
                     <Text style={styles.code}>{code}</Text>
                 </View>
                 <View style={styles.descriptionContainer}>
-                    {isSelected ? (
-                        isEditable ? (
-                            <TextInput
-                                style={styles.description}
-                                value={editableDescription}
-                                onChangeText={setEditableDescription} // Update description when edited
-                                multiline
-                            />
-                        ) : (
-                            <Text style={styles.description}>{editableDescription}</Text>
-                        )
+                    {isSelected && isEditable ? (
+                        <TextInput
+                            style={styles.description}
+                            value={editableDescription}
+                            onChangeText={handleDescriptionChange}
+                            multiline
+                        />
                     ) : (
                         <Text style={styles.description}>{editableDescription}</Text>
                     )}
@@ -76,7 +80,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     selectedCodeContainer: {
-        backgroundColor: '#FF7A69', // Brighter, more noticeable highlight color
+        backgroundColor: '#FF7A69',
     },
     code: {
         color: 'rgba(255, 255, 255, 1)',
@@ -85,14 +89,14 @@ const styles = StyleSheet.create({
     },
     descriptionContainer: {
         flex: 1,
-        justifyContent: 'center', // Center text vertically
+        justifyContent: 'center',
         paddingLeft: 12,
     },
     description: {
         color: 'rgba(28, 91, 131, 1)',
         fontSize: 15,
         fontWeight: '400',
-        textAlignVertical: 'center', // Ensure text is vertically centered in TextInput
+        textAlignVertical: 'center',
         marginTop: 12,
     },
 });

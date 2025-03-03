@@ -1,23 +1,23 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import GoalSection from './GoalSection';
 import useStore from "../store/store";
 import vbMappData from '../Knowledge/VBMapp.json';
-const Naming = () => {
+
+const Naming = ({ onSelectGoal }) => {
     const currentChildren = useStore(state => state.currentChildren);
-    console.log(currentChildren);
     const level = currentChildren?.命名;
-    console.log(level);
-    let goals = [
+    const [selectedGoals, setSelectedGoals] = useState([]);
+    const goals = [
         {
             title: '复习目标',
-            code: 'T'+ (level-1),
-            description: getRandomOne('命名',level-1),
+            code: 'T' + (level - 1),
+            description: getRandomOne('命名', level - 1),
         },
         {
             title: '新学习目标',
-            code: 'T'+(level),
-            description: getRandomOne('命名',level),
+            code: 'T' + level,
+            description: getRandomOne('命名', level),
         },
         {
             title: '自定义目标',
@@ -25,6 +25,7 @@ const Naming = () => {
             description: '使用"你好""再见"等礼貌用词',
         },
     ];
+
     function getRandomOne(domain, level) {
         const numericLevel = parseInt(level, 10);
         if (isNaN(numericLevel) || numericLevel < 1 || numericLevel > 15) {
@@ -40,16 +41,29 @@ const Naming = () => {
             return null;
         }
         const randIndex = Math.floor(Math.random() * subset.length);
-        let st = subset[randIndex];
-        console.log(st);
-        let value = st.key; // 或者 st.key
-        let valuesAsString = Object.values(st).map(value => String(value));
-
-
-        console.log(valuesAsString);
+        const st = subset[randIndex];
+        const valuesAsString = Object.values(st).map(value => String(value));
         return valuesAsString;
-
     }
+
+    const handleGoalSelect = (goal) => {
+        setSelectedGoals(prevSelected => {
+            const index = prevSelected.findIndex(g => g.code === goal.code);
+            const newSelected = [...prevSelected];
+            if (index > -1) {
+                // If goal is already selected, update it
+                newSelected[index] = goal;
+            } else {
+                // If goal is not selected, add it
+                newSelected.push(goal);
+            }
+            if (onSelectGoal) {
+                onSelectGoal(newSelected);
+            }
+            return newSelected;
+        });
+    };
+
     return (
         <View style={styles.container}>
             <Text style={styles.mainTitle}>命名教学目标</Text>
@@ -63,6 +77,7 @@ const Naming = () => {
                         title={goal.title}
                         code={goal.code}
                         description={goal.description}
+                        onPress={updatedDescription => handleGoalSelect({ ...goal, description: updatedDescription })}
                     />
                 ))}
             </View>

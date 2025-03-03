@@ -52,16 +52,15 @@ const ModelSelect = ({ visible, onClose, onSubmit }) => {
         // 遍历所有技能，若被选中，则构造 data 对象
         Object.keys(selectedSkills).forEach((skill) => {
             if (selectedSkills[skill]) {
-                if (skill === '命名') {
+                if (skill === '构音') {
                     // 将 currentChildren 的 selectedInitials 字段赋值给 "命名"
                     data[skill] = currentChildren.selectedInitials;
                 } else {
                     // 其他技能选中时赋值为空对象
-                    data[skill] = {};
+                    data[skill] = {level: currentChildren[skill]};
                 }
             }
         });
-        console.log('data',data);
         // 调用 store 中的 setLearningGoals 更新 learningGoals 状态
         const { setLearningGoals } = useStore.getState();
         setLearningGoals(data);

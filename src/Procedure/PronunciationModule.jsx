@@ -8,7 +8,7 @@ const PronunciationModule = ({ selectedModule, navigation, handleGy }) => {
         ['b', 'm', 'd', 'h', 'p', 't', 'g', 'k', 'n', 'f', 'j', 'q', 'x', 'l', 'z', 's', 'r', 'c', 'zh', 'ch', 'sh']
     ];
     const Goals = useStore(state => state.learningGoals);
-    const pinyinnow = Goals.命名;
+    const pinyinnow = Goals.构音;
     const [teachingGoal, setTeachingGoal] = useState("");
     const [words, setWords] = useState([]);
     const [imageUrls, setImageUrls] = useState([]);

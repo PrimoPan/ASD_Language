@@ -13,10 +13,8 @@ const initCacheDir = async () => {
 
 // 清理文件名的函数
 const sanitizeFilename = (filename) => {
-    return filename.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
-};
-
-// SHA256哈希生成文件名
+    return filename.replace(/[<>:"/\\|?*\x00-\x1F%&]/g, '_');
+};// SHA256哈希生成文件名
 const generateFilename = (url) => {
     const filename = url.split('/').pop().split('?')[0];
     const sanitizedFilename = sanitizeFilename(filename); // 清理文件名
