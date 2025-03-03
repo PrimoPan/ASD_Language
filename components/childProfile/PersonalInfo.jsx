@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
-import useStore from '../../SourceCode/store/store';
+import useStore from '../../src/store/store';
 import { useNavigation } from '@react-navigation/native'
 const PersonalInfo = () => {
   // Accessing data from Zustand store

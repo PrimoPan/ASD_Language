@@ -7,7 +7,7 @@ import {
     StyleSheet,
     useWindowDimensions,
 } from 'react-native';
-import useStore from '../../SourceCode/store/store';
+import useStore from '../store/store';
 import {useNavigation} from "@react-navigation/native";
 const skillsData = [
     { name: '构音', color: '#44DCF8' },

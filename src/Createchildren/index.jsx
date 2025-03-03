@@ -16,7 +16,7 @@ import {
 
 import useStore from '../store/store';
 import { useNavigation } from '@react-navigation/native';
-import PinyinSelector from '../Components/PinyinSelector';
+import PinyinSelector from '../components/PinyinSelector';
 
 const CreateChildren = () => {
   const navigation = useNavigation();

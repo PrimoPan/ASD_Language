@@ -14,7 +14,7 @@ import DH from "./DH"
 // 获取屏幕宽度和高度
 const { width, height } = Dimensions.get('window');
 
-const HorizontalLayout = () => {
+const Procedure = () => {
     const navigation = useNavigation();
     const { name } = useStore(state => state.currentChildren);
     const { learningGoals, setLearningGoals } = useStore();
@@ -215,4 +215,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default HorizontalLayout;
+export default Procedure;

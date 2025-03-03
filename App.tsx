@@ -8,19 +8,19 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, Text } from 'react-native';
-import Opening from './SourceCode/Opening/Opening';
-import Login from './SourceCode/Login/Login';
-import CreateChildren from './SourceCode/Createchildren/index.jsx';  // 引入 CreateChildren 组件
-import DisplayStoreData from "./SourceCode/DisplayStoreData";
-import GptTest from "./SourceCode/Components/GptTest";
-import ImageGenerator from "./SourceCode/Components/ImageGenerator"
-import LearningMode from "./SourceCode/LearningMode/LearningMode";
-import EnvironmentChoose from "./SourceCode/EnvironmentChoose";
-import GptLearning from "./SourceCode/GptLearning";
-import useStore from './SourceCode/store/store'; // 引入 zustand store
+import Opening from './src/Opening/Opening';
+import Login from './src/Login/Login';
+import CreateChildren from './src/Createchildren/index.jsx';  // 引入 CreateChildren 组件
+import DisplayStoreData from "./src/DisplayStoreData";
+import GptTest from "./src/components/GptTest";
+import ImageGenerator from "./src/components/ImageGenerator"
+import LearningMode from "./src/LearningMode/LearningMode";
+import EnvironmentChoose from "./src/EnvironmentChoose";
+import GptLearning from "./src/GptLearning";
+import useStore from './src/store/store'; // 引入 zustand store
 import ChildProfileScreen from "./components/childProfile/ChildProfileScreen.jsx";
 import LearningThemeScreen from "./components/LearningTheme/LearningThemeScreen.jsx";
-import HorizontalLayout from "./SourceCode/HorizontalLayout";
+import Procedure from "./src/Procedure";
 const Stack = createNativeStackNavigator();
 
 const App = () => {
@@ -39,7 +39,7 @@ const App = () => {
                 <Stack.Screen name='EnvironmentChoose' component={EnvironmentChoose}/>
                 <Stack.Screen name='GptLearning' component={GptLearning}/>
                 <Stack.Screen name='DisplayStoreData' component={DisplayStoreData}/>
-                <Stack.Screen name='HorizontalLayout' component={HorizontalLayout}/>
+                <Stack.Screen name='HorizontalLayout' component={Procedure}/>
                 <Stack.Screen name='LearningThemeScreen' component={LearningThemeScreen}/>
             </Stack.Navigator>
         </NavigationContainer>

@@ -1,19 +1,19 @@
-import React from 'react';
-import {View, Text, Image, StyleSheet, FlatList, ActivityIndicator} from 'react-native';
-import useStore from '../../SourceCode/store/store';
-import {generateImage} from "../../SourceCode/utils/api";
-import {renderIntoDocument} from "react-dom/test-utils";
-
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import useStore from '../../src/store/store';
+import { generateImage } from "../../src/utils/api";
+import { cacheImage } from "../../src/utils/imageCache";
+import RNFetchBlob from 'rn-fetch-blob';
 
 const Preferences = () => {
   const { currentChildren } = useStore();
   const { reinforcements = [], imageStyle } = currentChildren || {};
-  const [loadingMap, setLoadingMap] = React.useState({});
+  const [loadingMap, setLoadingMap] = useState({});
+  const [localExistsMap, setLocalExistsMap] = useState({}); // 新增状态来跟踪本地文件是否存在
 
   // 处理图片生成
   const handleGenerateImages = async () => {
     try {
-      // 过滤需要生成的项
       const needGenerate = reinforcements.filter(item => !item.image);
       if (needGenerate.length === 0) return;
 
@@ -26,8 +26,8 @@ const Preferences = () => {
         }, {})
       }));
 
-const generatePrompt = (itemValue, style) => {
-  return `[教学专用]${style === 'realistic' ? '写实' : '卡通'}风格插画，主体为${itemValue}，
+      const generatePrompt = (itemValue, style) => {
+        return `[教学专用]${style === 'realistic' ? '写实' : '卡通'}风格插画，主体为${itemValue}，
           用于自闭症儿童认知训练，要求：
           1. 空白纯色背景
           2. 无人物出现（必要情况需中国面孔）
@@ -37,18 +37,32 @@ const generatePrompt = (itemValue, style) => {
           6. 主体占画面70%以上
           7. 无文字/装饰元素
           风格参考：早期干预教具插图`;
-};
-
+      };
 
       // 生成图片并更新状态
       const updated = await Promise.all(
           needGenerate.map(async (item) => {
             try {
               const prompt = generatePrompt(item.value, imageStyle);
-              const imageUrl = await generateImage(prompt);
-              if (imageUrl==='0')
-                return item;
-              return { ...item, image: imageUrl };
+              const remoteUrl = await generateImage(prompt);
+
+              if (remoteUrl === '0') return item;
+
+              let localUri;
+              try {
+                localUri = await cacheImage(remoteUrl);
+              } catch (e) {
+                console.warn('Caching failed:', e);
+                localUri = remoteUrl; // Fallback to original URL
+              }
+
+              return {
+                ...item,
+                image: {
+                  uri: localUri,     // Local path or fallback URL
+                  remote: remoteUrl // Original cloud URL
+                }
+              };
             } catch (error) {
               console.error('生成失败:', item.value, error);
               return item;
@@ -57,14 +71,18 @@ const generatePrompt = (itemValue, style) => {
       );
 
       // 合并更新后的数据
-      const merged = reinforcements.map(item =>
-          updated.find(u => u.id === item.id) || item
+      const mergedMap = new Map(updated.map(item => [item.id, item]));
+      const merged = reinforcements.map(originalItem =>
+          mergedMap.get(originalItem.id) || originalItem // ✅保留原始有效数据
       );
 
       // 更新zustand
       useStore.getState().setCurrentChildren({
         ...currentChildren,
-        reinforcements: merged
+        reinforcements: merged.filter(Boolean).map(i => ({
+          ...i,
+          image: i.image ? { uri: i.image.uri, remote: i.image.remote } : undefined
+        }))
       });
 
     } catch (error) {
@@ -74,11 +92,27 @@ const generatePrompt = (itemValue, style) => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (reinforcements?.length > 0) {
       handleGenerateImages();
     }
   }, [reinforcements, imageStyle]);
+
+  // 检查本地文件是否存在
+  useEffect(() => {
+    const checkLocalFiles = async () => {
+      const newLocalExistsMap = {};
+      for (const item of reinforcements) {
+        if (item.image?.uri) {
+          const exists = await RNFetchBlob.fs.exists(item.image.uri);
+          newLocalExistsMap[item.id] = exists;
+        }
+      }
+      setLocalExistsMap(newLocalExistsMap);
+    };
+
+    checkLocalFiles();
+  }, [reinforcements]);
 
   // 渲染单个强化物项
   const renderItem = ({ item }) => {
@@ -91,11 +125,27 @@ const generatePrompt = (itemValue, style) => {
                 <ActivityIndicator color="#1C5B83" />
               </View>
           ) : (
-              <Image
-                  source={{ uri: item.image }}
-                  style={styles.preferenceImage}
-                  resizeMode="contain"
-              />
+              <>
+                {localExistsMap[item.id] ? (
+                    <Image
+                        source={{ uri: decodeURIComponent(item.image.uri) }} // 使用 decodeURIComponent 解码
+                        style={styles.preferenceImage}
+                        resizeMode="contain"
+                        onError={(error) => {
+                          console.error('Image loading error:', error.nativeEvent.error);
+                        }}
+                    />
+                ) : (
+                    <Image
+                        source={{ uri: item.image?.remote }} // 直接使用 remote URL
+                        style={styles.preferenceImage}
+                        resizeMode="contain"
+                        onError={(error) => {
+                          console.error('Image loading error:', error.nativeEvent.error);
+                        }}
+                    />
+                )}
+              </>
           )}
           <Text style={styles.preferenceName}>{item.value}</Text>
         </View>
@@ -119,7 +169,7 @@ const generatePrompt = (itemValue, style) => {
         <FlatList
             data={reinforcements}
             renderItem={renderItem}
-            keyExtractor={item => item.id.toString()}
+            keyExtractor={item => (item?.id ? item.id.toString() : Math.random().toString())}
             numColumns={3}
             columnWrapperStyle={styles.row}
             ListEmptyComponent={<Text style={styles.emptyText}>暂无强化物数据</Text>}
@@ -127,9 +177,6 @@ const generatePrompt = (itemValue, style) => {
       </View>
   );
 };
-
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -147,12 +194,12 @@ const styles = StyleSheet.create({
   loadingPlaceholder: {
     backgroundColor: '#e1e9f0',
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   emptyText: {
     textAlign: 'center',
     color: '#888',
-    marginTop: 20
+    marginTop: 20,
   },
   title: {
     fontSize: 15,
@@ -162,15 +209,6 @@ const styles = StyleSheet.create({
   categories: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  category: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 17,
-    paddingVertical: 4,
-    paddingHorizontal: 21,
-    marginRight: 6,
-    fontSize: 13,
-    color: '#000000',
   },
   categoryImage: {
     width: 80,

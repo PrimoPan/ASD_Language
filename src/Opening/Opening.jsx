@@ -22,7 +22,7 @@ const Opening = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <Image
-                source={require('../../Assets/BG/Opening/Opening.png')}
+                source={require('../../assets/BG/Opening/Opening.png')}
                 style={styles.image}
             />
         </View>

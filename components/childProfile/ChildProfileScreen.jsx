@@ -11,8 +11,8 @@ import Header from './Header';
 import PersonalInfo from './PersonalInfo';
 import Preferences from './Preferences';
 import LanguageMilestones from './LanguageMilestones';
-import useStore from '../../SourceCode/store/store';
-import ModalSelect from '../../SourceCode/ModelSelect/ModelSelect'; // Ensure this path is correct
+import useStore from '../../src/store/store';
+import ModalSelect from '../../src/ModelSelect/ModelSelect'; // Ensure this path is correct
 
 const ChildProfileScreen = () => {
     const [modalVisible, setModalVisible] = useState(false);

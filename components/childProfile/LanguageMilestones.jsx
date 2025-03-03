@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet } from 'react-native';
-import useStore from '../../SourceCode/store/store';
+import useStore from '../../src/store/store';
 const MilestoneItem = ({ title, englishTitle, progress, backgroundColor }) => (
     <View style={styles.milestoneItem}>
       {/* Left side title */}

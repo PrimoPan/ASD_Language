@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import useStore from '../store/store';
-import PinyinSelector from '../Components/PinyinSelector';
+import PinyinSelector from '../components/PinyinSelector';
 import vbMappData from '../Knowledge/VBMapp.json';
 
 function getRandomOne(domain, level) {
