@@ -1,17 +1,26 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
 
-const GoalSection = ({ title, code, description }) => {
+const GoalSection = ({ title, code, description, onPress }) => {
     const [isSelected, setIsSelected] = useState(false); // State to manage selection
     const [editableDescription, setEditableDescription] = useState(description); // State for editable description
 
     // Toggle selection on press
     const handlePress = () => {
         setIsSelected(!isSelected);
+        if (onPress) {
+            onPress(editableDescription);
+        }
+    };
+    const handleDescriptionChange = (newDescription) => {
+        setEditableDescription(newDescription);
+        if (title === '自定义目标' && onPress) {
+            // Update immediately when editing a custom goal
+            onPress(newDescription);
+        }
     };
 
-    // Check if title is '自定义'
-    const isEditable = title === '自定义';
+    const isEditable = title === '自定义目标';
 
     return (
         <View style={styles.container}>
@@ -30,8 +39,9 @@ const GoalSection = ({ title, code, description }) => {
                         <TextInput
                             style={styles.description}
                             value={editableDescription}
-                            onChangeText={setEditableDescription} // Update description when edited
+                            onChangeText={handleDescriptionChange}
                             multiline
+                            autoFocus
                         />
                     ) : (
                         <Text style={styles.description}>{editableDescription}</Text>

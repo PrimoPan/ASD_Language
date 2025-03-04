@@ -2,28 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import useStore from "../store/store.jsx";
 import LearningTitle from './LearningTitle';
-import ThemeSelection from './ThemeSelection';
 import ButtonGroup from './ButtonGroup';
-import LearningTheme from './LearningTheme';
-import ThemeScene from './ThemeScene';
-import PronunciationModule from './PronunciationModule';
-import Naming from './Naming'
 import {useNavigation} from "@react-navigation/native";
-import Language from "./Language";
-import DH from "./DH"
 // 获取屏幕宽度和高度
 const { width, height } = Dimensions.get('window');
+import Pronun from "./Pronun";
+import Naming from "./Naming";
 
-const Procedure = () => {
+const Draft = () => {
     const navigation = useNavigation();
-    const { name } = useStore(state => state.currentChildren);
-    const { learningGoals, setLearningGoals } = useStore();
-    const [selectedBox, setSelectedBox] = useState(null);
-    const [selectedTheme, setSelectedTheme] = useState("学习主题");
-    const [selectedMajor, setSelectMajor] = useState(null);
-    const [currentStep, setCurrentStep] = useState(0); // Add state to track the current step
-    const Models=['学习主题','主题场景','构音模块','命名模块','语言结构模块','对话模块'];
     const [availableModules, setAvailableModules] = useState([]);
+    const { name } = useStore(state => state.currentChildren);
+    const [selectedTheme, setSelectedTheme] = useState("构音模块");
+    const Models=['构音模块','命名模块','语言结构模块','对话模块'];
+    const { learningGoals, setLearningGoals } = useStore();
+    const [currentStep, setCurrentStep] = useState(0);
     useEffect(() => {
         const missingModules = [];
         if (!learningGoals?.构音) missingModules.push(2,6);
@@ -44,85 +37,20 @@ const Procedure = () => {
     }, [learningGoals]);
     useEffect(() => {
         const modules = [];
-        modules.push('学习主题');
-        modules.push('主题场景');
         if (learningGoals?.构音) modules.push("构音模块");
         if (learningGoals?.命名) modules.push("命名模块");
         if (learningGoals?.语言结构) modules.push("语言结构模块");
         if (learningGoals?.对话) modules.push("对话模块");
         setAvailableModules(modules);
     }, [learningGoals]);
-    const [activity, setActivity] = useState(null);
-    const [backgroundUrl, setBackgroundUrl] = useState(null);
-    const [Gy, setGy] = useState(null);
-    const [namingGoal, setnamingGoal] = useState(null);
-    const [LgGoal, setLgGoal] = useState(null);
-    const [DhGoal, setDhGoal] = useState(null);
     // 处理目标选择的函数
-    const handlenamingGoal = (goal) => {
-        setnamingGoal(goal);
-    };
-    const handleDhGoal = (goal) =>{
-        setDhGoal(goal);
-    }
-    const handleGy = (data) =>{
-        setGy(data);
-    }
-    const handleLgGoal = (goal) => {
-        setLgGoal(goal);
-    }
     const handleNextStep = () => {
         // 添加验证逻辑
         if (currentStep === 1) {
-            if (!activity || !backgroundUrl) {
-                Alert.alert("提示", "请先选择场景并生成图片");
-                return;
-            }
-
-            // 更新learningGoals
-            const updatedGoals = {
-                ...learningGoals,
-                主题场景: {
-                    major: selectedMajor,
-                    activity: activity,
-                    background: backgroundUrl,
-                },
-            };
-            setLearningGoals(updatedGoals);
-        } else if (currentStep === 2 && Gy != null) {
-            const updatedLearningGoals = {
-                ...learningGoals,
-                构音: Gy,
-            };
-            setLearningGoals(updatedLearningGoals);
-        } else if (currentStep === 3 && namingGoal != null) {
-            const updatedLearningGoals = {
-                ...learningGoals,
-                命名: {
-                    ...learningGoals.命名,
-                    detail: namingGoal,
-                },
-            };
-            setLearningGoals(updatedLearningGoals);
-        } else if (currentStep === 4 && LgGoal != null) {
-            const updatedLearningGoals = {
-                ...learningGoals,
-                语言结构: {
-                    ...learningGoals.语言结构,
-                    detail: LgGoal,
-                },
-            };
-            setLearningGoals(updatedLearningGoals);
-        } else if (currentStep === 5 && DhGoal != null) {
-            const updatedLearningGoals = {
-                ...learningGoals,
-                对话: {
-                    ...learningGoals.对话,
-                    detail: DhGoal,
-                },
-            };
-            setLearningGoals(updatedLearningGoals);
-            navigation.navigate('Draft');
+        } else if (currentStep === 2) {
+        } else if (currentStep === 3) {
+        } else if (currentStep === 4) {
+        } else if (currentStep === 5) {
         }
 
         // Move to the next step
@@ -135,9 +63,12 @@ const Procedure = () => {
             return nextStep < Models.length ? nextStep : Models.length - 1; // Ensure we don't exceed the last step
         });
     };
+    const handleSelectTheme = (theme) => {
+        setSelectedTheme(theme);
+    };
     const handleLast = () => {
         if (currentStep === 0) {
-            navigation.navigate('ChildProfileScreen');
+            navigation.navigate('HorizontalLayout');
         } else {
             setCurrentStep(prevStep => {
                 const newStep = prevStep - 1;
@@ -146,42 +77,30 @@ const Procedure = () => {
             });
         }
     };
-    useEffect(()=>{
-        setSelectedTheme(Models[currentStep]);
-    },[currentStep])
-    const handleSelectBox = (index) => {
-        setSelectedBox(index);
-    };
-
-    const handleSelectMajor = (Major) => {
-        setSelectMajor(Major);
-    };
-
-    const handleSelectTheme = (theme) => {
-        setSelectedTheme(theme);
-    };
 
     const handleChangeStep = (step) => {
         setCurrentStep(step); // Update currentStep based on the selected module
     };
+    useEffect(()=>{
+        setSelectedTheme(Models[currentStep]);
+    },[currentStep])
+
+
+
 
     return (
         <View style={[styles.container, { width, height }]}>
 
-            {
-                currentStep<6 && (
-            <Text style={styles.title}>智能生成教材</Text>
-                )
-            }
+            <Text style={styles.title}>教材草稿</Text>
             <Text style={styles.childFile}>儿童档案</Text>
-            <Text style={styles.logo}>RingoLift</Text>
+            <Text style={styles.logo}>LingoLift</Text>
             <View style={styles.ellipse} />
             <Text style={styles.childName}>儿童姓名：{name}</Text>
             <View style={styles.rectangle75} />
 
             {/* Render the LearningTitle Component */}
             {
-                currentStep<6 && (
+                currentStep<4 && (
                     <LearningTitle
                         selectedTheme={selectedTheme}
                         onSelect={handleSelectTheme}
@@ -189,34 +108,12 @@ const Procedure = () => {
                         availableModules={availableModules} // Pass unavailable modules
                     />)
             }
-
-            {/* Render content based on current step */}
-            {currentStep === 1 && (
-                <ThemeScene
-                    selectedMajor={selectedMajor}
-                    onSelectScene={(scene, url) => {
-                        setActivity(scene);
-                        setBackgroundUrl(url);
-                    }}
-                />
-            )}
-            {currentStep === 2 && (
-                <PronunciationModule handleGy={handleGy} />
-            )}
-            {currentStep === 3 && (
-                <Naming onSelectGoal={handlenamingGoal}/>
-            )}
-            {currentStep === 4 && (
-                <Language onSelectGoal={handleLgGoal}/>
-            )}
-            {currentStep === 5 && (
-                <DH onSelectGoal={handleDhGoal}/>
-            )}
-            {/* Render the ThemeSelection Component */}
             {currentStep === 0 && (
-                <ThemeSelection selectedBox={selectedBox} handleSelectBox={handleSelectBox} handleSelectMajor={handleSelectMajor} />
+                <Pronun />
             )}
-
+            {currentStep === 1 && (
+                <Naming/>
+            )}
             {/* Render the ButtonGroup Component */}
             <ButtonGroup handleNext={handleNextStep} handleLast={handleLast} step={currentStep} />
         </View>
@@ -288,4 +185,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Procedure;
+export default Draft;

@@ -1,14 +1,13 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import DHSection from './DHSection';
 import useStore from "../store/store";
 import vbMappData from '../Knowledge/VBMapp.json';
 
-const DH = () => {
+const DH = ({ onSelectGoal }) => {
     const currentChildren = useStore(state => state.currentChildren);
-    console.log(currentChildren);
     const level = currentChildren?.对话;
-    console.log(level);
+    const [selectedGoals, setSelectedGoals] = useState([]);
     let goals = [
         {
             title: '复习目标',
@@ -41,16 +40,27 @@ const DH = () => {
             return null;
         }
         const randIndex = Math.floor(Math.random() * subset.length);
-        let st = subset[randIndex];
-        console.log(st);
-        let value = st.key; // 或者 st.key
-        let valuesAsString = Object.values(st).map(value => String(value));
-
-
-        console.log(valuesAsString);
+        const st = subset[randIndex];
+        const valuesAsString = Object.values(st).map(value => String(value));
         return valuesAsString;
-
     }
+    const handleGoalSelect = (goal) => {
+        setSelectedGoals(prevSelected => {
+            const index = prevSelected.findIndex(g => g.code === goal.code);
+            const newSelected = [...prevSelected];
+            if (index > -1) {
+                // If goal is already selected, update it
+                newSelected[index] = goal;
+            } else {
+                // If goal is not selected, add it
+                newSelected.push(goal);
+            }
+            if (onSelectGoal) {
+                onSelectGoal(newSelected);
+            }
+            return newSelected;
+        });
+    };
     return (
         <View style={styles.container}>
             <Text style={styles.mainTitle}>对话教学目标</Text>
@@ -64,6 +74,7 @@ const DH = () => {
                         title={goal.title}
                         code={goal.code}
                         description={goal.description}
+                        onPress={updatedDescription => handleGoalSelect({ ...goal, description: updatedDescription })}
                     />
                 ))}
             </View>

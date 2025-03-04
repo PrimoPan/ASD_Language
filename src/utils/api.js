@@ -29,11 +29,13 @@ export const gptQuery = async (question) => {
             }
         );
         const { data } = response.data;
+        console.log('debugg',data);
         if (!data) {
             throw new Error('接口未返回回答');
         }
         return data; // 返回 GPT 的回答
     } catch (error) {
+        console.log(error);
         throw new Error(error.response?.data?.message || '请求 GPT 失败');
     }
 };
