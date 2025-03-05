@@ -12,17 +12,16 @@ import {
 import useStore from "../store/store.jsx";
 import { gptQuery } from "../utils/api";
 
-const Pronun = () => {
+const Naming = () => {
     const { name } = useStore(state => state.currentChildren);
-    const { learningGoals } = useStore();
+    const { learningGoals, setLearningGoals } = useStore();
 
     const [loading, setLoading] = useState(false);
     const [planContent, setPlanContent] = useState('');
     const [editing, setEditing] = useState(false);
     const [editableContent, setEditableContent] = useState('');
-
+    const namingDetails = learningGoals?.命名?.detail || [];
     useEffect(() => {
-        console.log("Pronun", name);
         console.log("Goals", learningGoals);
     }, []);
 
@@ -31,11 +30,23 @@ const Pronun = () => {
         ?.map(card => card.word)
         ?.join(', ');
 
+
+    const namingDescriptions = namingDetails
+        .map(detailItem => {
+            // 判断 detailItem.description 是否为数组
+            if (Array.isArray(detailItem.description)) {
+                // 若为数组则 join
+                return detailItem?.description.join(',');
+            } else {
+                // 若为字符串或其他类型，直接返回
+                return detailItem.description;
+            }
+        })
+        .join(',');
     const fetchTeachingPlan = async () => {
-        const namingDescriptions = namingDetails
-            .map(detailItem => detailItem.description.join(',')) // detailItem.description本身是数组
-            .join(',');  // 再把多个 detailItem 拼起来
-        const prompt = `这是命名阶段的教学内容生成模块：请你给出完整的教学计划，保证是一段可以直接包裹在包裹在我写的Text组件内的React Native的字符串，使用反斜杠n来换行。不要在返回内容里出现Text、jsx等无关内容（因为返回内容是一段字符串，会被直接包裹在text中）。大概300汉字字左右，用词尽量专业。你是一个中国孤独症教育专家，现在要对孤独症儿童VB-mapp中的命名模块教学。你的教学目标是：${namingDescriptions}。你的教学场景是：${learningGoals?.主题场景?.major} - ${learningGoals?.主题场景?.activity}，你可以用到的教学的词语有：${cardsContent}，请你生成一个具体的教学步骤，尽可能将这些词语和场景进行串联，同时符合教学目标，给出大概300字的教学计划，直接给出内容，不需要其他任何多余回答！`;
+
+        //之前的bug, description格式没有统一
+        const prompt = `这是阶段的教学内容生成模块：请你给出完整的教学计划，保证是一段可以直接包裹在包裹在我写的Text组件内的React Native的字符串，使用反斜杠n来换行。不要在返回内容里出现Text、jsx等无关内容（因为返回内容是一段字符串，会被直接包裹在text中）。大概300汉字字左右，用词尽量专业。你是一个中国孤独症教育专家，现在要对孤独症儿童VB-mapp中的命名教学模块教学。你的教学目标是：${namingDescriptions}。你的教学场景是：${learningGoals?.主题场景?.major} - ${learningGoals?.主题场景?.activity}，你可以用到的教学的词语有：${cardsContent}，请你生成一个具体的教学步骤，尽可能将这些词语和场景进行串联，同时符合命名学的教学目标，给出大概300字的教学计划，直接给出内容，不需要其他任何多余回答！`;
         setLoading(true);
         try {
             const result = await gptQuery(prompt);
@@ -48,13 +59,31 @@ const Pronun = () => {
         }
     };
     // 获取 detail 数组
-    const namingDetails = learningGoals?.命名?.detail || [];
+    useEffect(() => {
+        if (learningGoals?.命名?.Draft) {
+            setPlanContent(learningGoals.命名.Draft);
+            setEditableContent(learningGoals.命名.Draft);
+        }
+    }, [learningGoals]);
+    const handleEditButtonPress = () => {
+        if (editing) {
+            // 如果从“编辑”切换到“完成”，需要把编辑内容同步到 learningGoals
+            setPlanContent(editableContent);
+            const updatedGoals = {
+                ...learningGoals,
+                命名: {
+                    ...learningGoals?.命名,
+                    Draft: editableContent, // 将编辑后的内容存到 Draft
+                },
+            };
+            setLearningGoals(updatedGoals);
+        }
+        setEditing(!editing);
+    };
 
     // 对每个 detailItem 的 description 做 join，然后再整体 join 起来
     // 假设你想每条 description 各占一行，可以用 '\n' 连接
-    const namingDescriptions = namingDetails
-        .map(detailItem => detailItem.description.join(',')) // detailItem.description本身是数组
-        .join(',');  // 再把多个 detailItem 拼起来
+
 
     return (
         <View style={styles.container}>
@@ -81,23 +110,6 @@ const Pronun = () => {
                     </View>
 
                     {/* 关键：固定高度或最大高度，让它不会无限撑开 */}
-                    <View style={styles.imageScrollContainer}>
-                        <ScrollView horizontal>
-                            {learningGoals?.构音?.cards
-                                ?.slice(0, 4)
-                                .map((card, index) => (
-                                    <View style={styles.imageCard} key={index}>
-                                        <Image
-                                            source={{ uri: card.image }}
-                                            style={styles.cardImage}
-                                            resizeMode="cover"
-                                        />
-                                        <Text style={styles.cardIndex}>{index + 1}.</Text>
-                                    </View>
-                                ))
-                            }
-                        </ScrollView>
-                    </View>
                 </View>
             </View>
 
@@ -130,12 +142,7 @@ const Pronun = () => {
 
                             <TouchableOpacity
                                 style={styles.editButtonWrapper}
-                                onPress={() => {
-                                    if (editing) {
-                                        setPlanContent(editableContent);
-                                    }
-                                    setEditing(!editing);
-                                }}
+                                onPress={handleEditButtonPress}
                             >
                                 <Text style={styles.editButtonText}>
                                     {editing ? '完成' : '编辑'}
@@ -151,6 +158,7 @@ const Pronun = () => {
 
 const styles = StyleSheet.create({
     container: {
+        top:'10%',
         flexDirection: 'row',
         width: '100%',
         maxWidth: 1029,
@@ -161,7 +169,7 @@ const styles = StyleSheet.create({
     },
     leftContainer: {
         width: '50%',
-        paddingRight: '3%',
+        paddingRight: '10%',
     },
     rightContainer: {
         width: '50%',
@@ -272,4 +280,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default Pronun;
+export default Naming;

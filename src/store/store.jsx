@@ -24,6 +24,7 @@ const useStore = create((set, get) => ({
 
     learningGoals: null,
     setLearningGoals: (data) => {
+        console.log('updtaeLearningGoals:', data);
         const oldData = get().learningGoals;
         if (JSON.stringify(oldData) === JSON.stringify(data)) return;
         set({ learningGoals: data });

@@ -98,7 +98,6 @@ const CreateChildren = () => {
       childImage,
       imageStyle
     };
-    Alert.alert('提交成功', JSON.stringify(formData, null, 2));
     setCurrentChildren(formData);
     navigation.replace('ChildProfileScreen');
   };

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import {View, Text, StyleSheet, Dimensions, ScrollView, Image, Alert} from 'react-native';
 import useStore from "../store/store.jsx";
 import LearningTitle from './LearningTitle';
 import ButtonGroup from './ButtonGroup';
@@ -8,7 +8,8 @@ import {useNavigation} from "@react-navigation/native";
 const { width, height } = Dimensions.get('window');
 import Pronun from "./Pronun";
 import Naming from "./Naming";
-
+import Ls from "./Ls.jsx"
+import Dia from "./Dia";
 const Draft = () => {
     const navigation = useNavigation();
     const [availableModules, setAvailableModules] = useState([]);
@@ -49,6 +50,27 @@ const Draft = () => {
         if (currentStep === 1) {
         } else if (currentStep === 2) {
         } else if (currentStep === 3) {
+            if (currentStep === 3) {
+                Alert.alert(
+                    '提示', // 弹框标题
+                    '是否开始上课\n继续教学将本次教学目标上传到服务器，开始投影教学！',
+                    [
+                        {
+                            text: '取消',
+                            onPress: () => console.log('Cancel Pressed'),
+                            style: 'cancel',
+                        },
+                        {
+                            text: '确定',
+                            onPress: () => {
+                                // 在这里执行上传教学目标并开始投影教学等逻辑
+                                console.log('OK Pressed');
+                            },
+                        },
+                    ],
+                    { cancelable: false }
+                );
+            }
         } else if (currentStep === 4) {
         } else if (currentStep === 5) {
         }
@@ -114,7 +136,30 @@ const Draft = () => {
             {currentStep === 1 && (
                 <Naming/>
             )}
+            {currentStep === 2 && (
+                <Ls/>
+            )}
+            {currentStep === 3 && (
+                <Dia/>
+            )}
             {/* Render the ButtonGroup Component */}
+            <View style={styles.imageScrollContainer}>
+                <ScrollView horizontal>
+                    {learningGoals?.构音?.cards
+                        ?.slice(0, 4)
+                        .map((card, index) => (
+                            <View style={styles.imageCard} key={index}>
+                                <Image
+                                    source={{ uri: card.image }}
+                                    style={styles.cardImage}
+                                    resizeMode="cover"
+                                />
+                                <Text style={styles.cardIndex}>{index + 1}.</Text>
+                            </View>
+                        ))
+                    }
+                </ScrollView>
+            </View>
             <ButtonGroup handleNext={handleNextStep} handleLast={handleLast} step={currentStep} />
         </View>
     );
@@ -182,6 +227,35 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 700,
         left: '35%',
+    },
+    imageScrollContainer: {
+        position: 'fixed',
+        // 固定高度或最大高度，这里示例200 + 一些margin
+        height: 220, // 你需要多高可自行调整
+        top: '12%',
+        // 如果想要更灵活，可用 maxHeight: 220, 并加 overflow: "hidden"
+    },
+    imageCard: {
+        position: 'relative',
+        width: 150,
+        height: 150,
+        marginRight: 10,
+    },
+    cardImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 5,
+    },
+    cardIndex: {
+        position: 'absolute',
+        top: 2,
+        left: 2,
+        backgroundColor: 'rgba(255,255,255,0.6)',
+        paddingHorizontal: 4,
+        borderRadius: 3,
+        fontSize: 20,
+        fontWeight: 'bold',
+        color: '#000',
     },
 });
 

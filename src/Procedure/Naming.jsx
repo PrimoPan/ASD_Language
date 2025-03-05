@@ -22,7 +22,7 @@ const Naming = ({ onSelectGoal }) => {
         {
             title: '自定义目标',
             code: '自定义',
-            description: '使用"你好""再见"等礼貌用词',
+            description: ['使用"你好""再见"等礼貌用词'],
         },
     ];
 
