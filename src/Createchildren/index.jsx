@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import {
 import useStore from '../store/store';
 import { useNavigation } from '@react-navigation/native';
 import PinyinSelector from '../components/PinyinSelector';
+import { changeChildrenInfo } from "../services/api";
 
 const CreateChildren = () => {
   const navigation = useNavigation();
@@ -25,19 +26,19 @@ const CreateChildren = () => {
 
   // =============== 表单状态 ===============
   const [name, setName] = useState(currentChildren?.name || '');
-  const [age, setAge] = useState(currentChildren?.age || '');
+  const [age, setAge] = useState(currentChildren?.age?.toString() || '');
   const [gender, setGender] = useState(currentChildren?.gender || '');
   const [courseDuration, setCourseDuration] = useState(
-      currentChildren?.courseDuration || ''
+      currentChildren?.courseDuration?.toString() || ''
   );
   const [reinforcements, setReinforcements] = useState(
       currentChildren?.reinforcements || []
   );
-  const [naming, setNaming] = useState(currentChildren?.['命名'] || '');
+  const [naming, setNaming] = useState(currentChildren?.['命名']?.toString() || '');
   const [languageStructure, setLanguageStructure] = useState(
-      currentChildren?.['语言结构'] || ''
+      currentChildren?.['语言结构']?.toString() || ''
   );
-  const [dialogue, setDialogue] = useState(currentChildren?.['对话'] || '');
+  const [dialogue, setDialogue] = useState(currentChildren?.['对话']?.toString() || '');
   const [selectedInitials, setSelectedInitials] = useState(
       currentChildren?.selectedInitials || []
   );
@@ -45,6 +46,11 @@ const CreateChildren = () => {
 
   // 图片占位
   const [childImage, setChildImage] = useState(currentChildren?.childImage || '');
+  useEffect(() => {
+    return () => {
+      console.log(currentChildren);
+    };
+  },[]);
 
   // =============== 强化物逻辑 ===============
   // 每条新 Reinforcement 带上 categoryIndex，避免删除串行
@@ -82,8 +88,12 @@ const CreateChildren = () => {
   };
 
   // =============== 提交 ===============
-  const handleSubmit = () => {
-    const currentTime = new Date().toISOString();
+  const handleSubmit = async () => {
+    if (!name || !age || !gender || !courseDuration) {
+      Alert.alert("提示", "请填写完整信息");
+      return;
+    }
+
     const formData = {
       name,
       age,
@@ -94,13 +104,26 @@ const CreateChildren = () => {
       '语言结构': languageStructure,
       '对话': dialogue,
       selectedInitials,
-      createdAt: currentTime,
-      childImage,
+      childImage: childImage? childImage: 'https://bkimg.cdn.bcebos.com/pic/9d82d158ccbf6c81800a010dc568a63533fa838bea82?x-bce-process=image/format,f_auto/watermark,image_d2F0ZXIvYmFpa2UyNzI,g_7,xp_5,yp_5,P_20/resize,m_lfit,limit_1,h_1080',
       imageStyle
     };
-    setCurrentChildren(formData);
-    navigation.replace('ChildProfileScreen');
+
+    try {
+      setCurrentChildren(formData);
+      // ✅ 调用 API，提交儿童信息
+      const result = await changeChildrenInfo(formData);
+
+      // ✅ 存储到 Zustand，更新本地状态
+
+
+      // ✅ 提示成功并跳转
+      Alert.alert("成功", "儿童信息已提交！");
+      navigation.replace("ChildProfileScreen");
+    } catch (error) {
+      Alert.alert("错误", error);
+    }
   };
+
   const isSubmitDisabled = !name || !age || !gender || !courseDuration;
 
   // =============== 按分类渲染强化物 ===============

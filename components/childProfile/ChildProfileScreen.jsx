@@ -13,13 +13,17 @@ import Preferences from './Preferences';
 import LanguageMilestones from './LanguageMilestones';
 import useStore from '../../src/store/store';
 import ModalSelect from '../../src/ModelSelect/ModelSelect'; // Ensure this path is correct
-
+import { useNavigation } from '@react-navigation/native'; // ✅ 引入导航
 const ChildProfileScreen = () => {
     const [modalVisible, setModalVisible] = useState(false);
-
+    const navigation = useNavigation();
     const initialStoreValue = useStore.getState().currentChildren || {};
+    const setCurrentChildren = useStore((state) => state.setCurrentChildren);
     console.log(initialStoreValue);
-
+    const handleGoToMainMenu = () => {
+        setCurrentChildren({}); // ✅ 清空儿童信息
+        navigation.navigate('ChildrenList'); // ✅ 返回主菜单页面
+    };
     // Define the cards data
     const cards = [
         { id: '1', component: <PersonalInfo /> },
@@ -52,12 +56,23 @@ const ChildProfileScreen = () => {
                 />
 
                 {/* "去备课" button at the bottom */}
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={() => setModalVisible(true)}
-                >
-                    <Text style={styles.buttonText}>去备课</Text>
-                </TouchableOpacity>
+                <View style={styles.buttonsRow}>
+                    {/* 去备课 */}
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => setModalVisible(true)}
+                    >
+                        <Text style={styles.buttonText}>去备课</Text>
+                    </TouchableOpacity>
+
+                    {/* 回到主菜单 */}
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={handleGoToMainMenu} // ✅ 调用清空 & 返回方法
+                    >
+                        <Text style={styles.buttonText}>回到主菜单</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
 
             <ModalSelect visible={modalVisible} onClose={() => setModalVisible(false)} />

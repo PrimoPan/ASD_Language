@@ -22,8 +22,9 @@ import ChildProfileScreen from "./components/childProfile/ChildProfileScreen.jsx
 import LearningThemeScreen from "./components/LearningTheme/LearningThemeScreen.jsx";
 import Procedure from "./src/Procedure";
 import Draft from "./src/Draft/index.jsx"
+import ChildrenList from "./src/ChildrenList";
 const Stack = createNativeStackNavigator();
-
+import ChildHistory from "./src/ChildHistory";
 const App = () => {
     const { user } = useStore(); // 从zustand获取user状态
 
@@ -43,6 +44,8 @@ const App = () => {
                 <Stack.Screen name='HorizontalLayout' component={Procedure}/>
                 <Stack.Screen name='LearningThemeScreen' component={LearningThemeScreen}/>
                 <Stack.Screen name='Draft' component={Draft}/>
+                <Stack.Screen name='ChildrenList' component={ChildrenList}/>
+                <Stack.Screen name='ChildHistory' component={ChildHistory}/>
             </Stack.Navigator>
         </NavigationContainer>
     );

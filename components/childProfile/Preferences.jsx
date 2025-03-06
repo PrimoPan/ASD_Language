@@ -4,6 +4,7 @@ import useStore from '../../src/store/store';
 import { generateImage } from "../../src/utils/api";
 import { cacheImage } from "../../src/utils/imageCache";
 import RNFetchBlob from 'rn-fetch-blob';
+import {changeChildrenInfo} from "../../src/services/api";
 
 const Preferences = () => {
   const { currentChildren } = useStore();
@@ -84,7 +85,15 @@ const Preferences = () => {
           image: i.image ? { uri: i.image.uri, remote: i.image.remote } : undefined
         }))
       });
+      const childrenForUpload = {
+        ...currentChildren,
+        reinforcements: updated.map(i => ({
+          ...i,
+          image: i.image ? { remote: i.image.remote } : undefined // **只传 remote，不传 uri**
+        }))
+      };
 
+      await changeChildrenInfo(childrenForUpload);
     } catch (error) {
       console.error('批量生成失败:', error);
     } finally {

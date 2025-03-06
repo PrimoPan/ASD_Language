@@ -1,114 +1,99 @@
 import React, { useState, useEffect } from 'react';
-import {View, Text, StyleSheet, Dimensions, ScrollView, Image, Alert} from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Alert,ScrollView, Image } from 'react-native';
 import useStore from "../store/store.jsx";
-import LearningTitle from './LearningTitle';
-import ButtonGroup from './ButtonGroup';
-import {useNavigation} from "@react-navigation/native";
-// 获取屏幕宽度和高度
-const { width, height } = Dimensions.get('window');
+import { useNavigation } from "@react-navigation/native";
+import { createLearning } from "../services/api"; // ✅ 引入 API
 import Pronun from "./Pronun";
 import Naming from "./Naming";
-import Ls from "./Ls.jsx"
+import Ls from "./Ls.jsx";
 import Dia from "./Dia";
+import LearningTitle from './LearningTitle';
+import ButtonGroup from './ButtonGroup';
+
+// 获取屏幕宽度和高度
+const { width, height } = Dimensions.get('window');
+
 const Draft = () => {
     const navigation = useNavigation();
-    const [availableModules, setAvailableModules] = useState([]);
     const { name } = useStore(state => state.currentChildren);
-    const [selectedTheme, setSelectedTheme] = useState("构音模块");
-    const Models=['构音模块','命名模块','语言结构模块','对话模块'];
-    const { learningGoals, setLearningGoals } = useStore();
-    const [currentStep, setCurrentStep] = useState(0);
+    const { learningGoals } = useStore();
+
+    // **所有可能的模块**
+    const Models = ['构音模块', '命名模块', '语言结构模块', '对话模块'];
+
+    // **确保 `learningGoals` 存在**
+    const safeLearningGoals = learningGoals || {};
+
+    // **计算当前儿童的可用模块索引**
+    const availableModulesIndex = Models.map((_, index) => {
+        if (index === 0 && safeLearningGoals?.构音) return index;
+        if (index === 1 && safeLearningGoals?.命名) return index;
+        if (index === 2 && safeLearningGoals?.语言结构) return index;
+        if (index === 3 && safeLearningGoals?.对话) return index;
+        return null;
+    }).filter(index => index !== null); // ✅ **确保 `availableModulesIndex` 是数组**
+
+    // **如果 `availableModulesIndex` 为空，默认设置为 `[0]`**
+    const safeAvailableModulesIndex = availableModulesIndex.length > 0 ? availableModulesIndex : [0];
+
+    // **计算最后一个可用模块的索引**
+    const allowedLastStep = safeAvailableModulesIndex[safeAvailableModulesIndex.length - 1];
+
+    // **计算可用模块的名称**
+    const availableModules = Models.filter((_, index) => safeAvailableModulesIndex.includes(index));
+
+    // **初始状态设为第一个有效模块**
+    const [currentStep, setCurrentStep] = useState(safeAvailableModulesIndex[0]);
+    const [selectedTheme, setSelectedTheme] = useState(Models[currentStep]);
+
     useEffect(() => {
-        const missingModules = [];
-        if (!learningGoals?.构音) missingModules.push(2,6);
-        if (!learningGoals?.命名) missingModules.push(3);
-        if (!learningGoals?.语言结构) missingModules.push(4);
-        if (!learningGoals?.对话) missingModules.push(5);
-
-        // If there are missing modules, skip them
-        if (missingModules.length > 0) {
-            setCurrentStep(prevStep => {
-                let nextStep = prevStep;
-                while (missingModules.includes(nextStep)) {
-                    nextStep += 1; // Skip missing modules
-                }
-                return nextStep >= Models.length ? Models.length - 1 : nextStep; // Ensure we don't exceed the last step
-            });
-        }
-    }, [learningGoals]);
-    useEffect(() => {
-        const modules = [];
-        if (learningGoals?.构音) modules.push("构音模块");
-        if (learningGoals?.命名) modules.push("命名模块");
-        if (learningGoals?.语言结构) modules.push("语言结构模块");
-        if (learningGoals?.对话) modules.push("对话模块");
-        setAvailableModules(modules);
-    }, [learningGoals]);
-    // 处理目标选择的函数
-    const handleNextStep = () => {
-        // 添加验证逻辑
-        if (currentStep === 1) {
-        } else if (currentStep === 2) {
-        } else if (currentStep === 3) {
-            if (currentStep === 3) {
-                Alert.alert(
-                    '提示', // 弹框标题
-                    '是否开始上课\n继续教学将本次教学目标上传到服务器，开始投影教学！',
-                    [
-                        {
-                            text: '取消',
-                            onPress: () => console.log('Cancel Pressed'),
-                            style: 'cancel',
-                        },
-                        {
-                            text: '确定',
-                            onPress: () => {
-                                // 在这里执行上传教学目标并开始投影教学等逻辑
-                                console.log('OK Pressed');
-                            },
-                        },
-                    ],
-                    { cancelable: false }
-                );
-            }
-        } else if (currentStep === 4) {
-        } else if (currentStep === 5) {
-        }
-
-        // Move to the next step
-        setCurrentStep(prevStep => {
-            let nextStep = prevStep + 1;
-            // Check if the next step is available
-            while (nextStep < Models.length && !availableModules.includes(Models[nextStep])) {
-                nextStep++;
-            }
-            return nextStep < Models.length ? nextStep : Models.length - 1; // Ensure we don't exceed the last step
-        });
-    };
-    const handleSelectTheme = (theme) => {
-        setSelectedTheme(theme);
-    };
-    const handleLast = () => {
-        if (currentStep === 0) {
-            navigation.navigate('HorizontalLayout');
-        } else {
-            setCurrentStep(prevStep => {
-                const newStep = prevStep - 1;
-                setSelectedTheme(Models[newStep]); // 使用 newStep 而不是 currentStep
-                return newStep;
-            });
-        }
-    };
-
-    const handleChangeStep = (step) => {
-        setCurrentStep(step); // Update currentStep based on the selected module
-    };
-    useEffect(()=>{
         setSelectedTheme(Models[currentStep]);
-    },[currentStep])
+    }, [currentStep]);
 
+    // **提交学习计划**
+    const handleSubmitLearning = async () => {
+        try {
+            const response = await createLearning(safeLearningGoals, name);
+            console.log(response);
+            Alert.alert("✅ 提交成功", "学习记录已保存！");
+        } catch (error) {
+            Alert.alert("❌ 提交失败", error.toString());
+        }
+    };
 
+    // **下一步逻辑**
+    const handleNextStep = () => {
+        if (currentStep === allowedLastStep) {  // ✅ **如果 currentStep 是最后一个模块，则提交**
+            Alert.alert(
+                '提示',
+                '是否开始上课\n继续教学将本次教学目标上传到服务器，开始投影教学！',
+                [
+                    { text: '取消', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
+                    { text: '确定', onPress: () => handleSubmitLearning() }, // ✅ **点击确定后上传**
+                ],
+                { cancelable: false }
+            );
+        } else {
+            // **找到下一个可用的模块**
+            const currentIndex = safeAvailableModulesIndex.indexOf(currentStep);
+            const nextStep = safeAvailableModulesIndex[currentIndex + 1];
 
+            if (nextStep !== undefined) {
+                setCurrentStep(nextStep);
+            }
+        }
+    };
+
+    const handleLast = () => {
+        const currentIndex = safeAvailableModulesIndex.indexOf(currentStep);
+        const prevStep = safeAvailableModulesIndex[currentIndex - 1];
+
+        if (prevStep !== undefined) {
+            setCurrentStep(prevStep);
+        } else {
+            navigation.navigate('HorizontalLayout');
+        }
+    };
 
     return (
         <View style={[styles.container, { width, height }]}>
@@ -121,15 +106,14 @@ const Draft = () => {
             <View style={styles.rectangle75} />
 
             {/* Render the LearningTitle Component */}
-            {
-                currentStep<4 && (
-                    <LearningTitle
-                        selectedTheme={selectedTheme}
-                        onSelect={handleSelectTheme}
-                        onChangeStep={handleChangeStep}
-                        availableModules={availableModules} // Pass unavailable modules
-                    />)
-            }
+            {currentStep < 4 && (
+                <LearningTitle
+                    selectedTheme={selectedTheme}
+                    onSelect={setSelectedTheme}
+                    onChangeStep={setCurrentStep}
+                    availableModules={availableModules} // ✅ 现在 `availableModules` 一定是数组
+                />
+            )}
             {currentStep === 0 && (
                 <Pronun />
             )}
@@ -164,7 +148,6 @@ const Draft = () => {
         </View>
     );
 };
-
 
 const styles = StyleSheet.create({
     container: {

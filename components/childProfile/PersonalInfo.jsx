@@ -1,17 +1,19 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import useStore from '../../src/store/store';
-import { useNavigation } from '@react-navigation/native'
-const PersonalInfo = () => {
-  // Accessing data from Zustand store
+import { useNavigation } from '@react-navigation/native';
 
-  const { name, gender, age, courseDuration } = useStore(state => state.currentChildren); // Access currentChildren
-  const navigation = useNavigation(); // Get navigation object from the hook
+const PersonalInfo = () => {
+  const { name, gender, age, courseDuration, childImage } = useStore(state => state.currentChildren);
+  const navigation = useNavigation();
 
   const handleEdit = () => {
-    // Navigate to the 'CreateChildren' screen when the button is clicked
     navigation.navigate('CreateChildren');
   };
+  const handleViewHistory = () => {
+    navigation.navigate("ChildHistory", { childName: name });
+  };
+
 
   return (
       <View style={styles.container}>
@@ -26,26 +28,29 @@ const PersonalInfo = () => {
             />
             <Text style={styles.title}>个人档案</Text>
           </View>
-          <TouchableOpacity onPress={handleEdit}> {/* Attach handleEdit to the button */}
+          <TouchableOpacity onPress={handleEdit}>
             <Text style={styles.editButton}>编辑</Text>
           </TouchableOpacity>
         </View>
+
         <View style={styles.infoContainer}>
           <Image
               source={{
-                uri: 'https://cdn.builder.io/api/v1/image/assets/TEMP/550e2eca923e4e9b0603a7508d1ead03c0c067db022fdb18b6140e1b3fb56ee8?placeholderIfAbsent=true&apiKey=248c3eeefc164ad3bce1d814c47652e0',
+                uri: childImage?.trim() ? childImage : 'https://cdn.builder.io/api/v1/image/assets/TEMP/550e2eca923e4e9b0603a7508d1ead03c0c067db022fdb18b6140e1b3fb56ee8?placeholderIfAbsent=true&apiKey=248c3eeefc164ad3bce1d814c47652e0',
               }}
               style={styles.profileImage}
               resizeMode="contain"
           />
+
           <View style={styles.details}>
             <Text style={styles.name}>{name}</Text>
             <Text style={styles.info}>年龄 : {age} 岁</Text>
             <Text style={styles.info}>性别 : {gender === 'male' ? '男孩' : '女孩'}</Text>
           </View>
+
           <View style={styles.courseInfo}>
             <Text style={styles.info}>课程周期 ：{courseDuration} 个月</Text>
-            <TouchableOpacity style={styles.viewRecordButton}>
+            <TouchableOpacity style={styles.viewRecordButton} onPress={handleViewHistory}>
               <Image
                   source={{
                     uri: 'https://cdn.builder.io/api/v1/image/assets/TEMP/119f2313bdff274e959a567224937a011560f7cbadaaf19a31b7135e1a159ea6?placeholderIfAbsent=true&apiKey=248c3eeefc164ad3bce1d814c47652e0',
@@ -53,7 +58,8 @@ const PersonalInfo = () => {
                   style={styles.viewRecordIcon}
                   resizeMode="contain"
               />
-              <Text style={styles.viewRecordText}>查看课程记录</Text>
+              <Text style={styles.viewRecordText}
+              >查看课程记录</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -99,6 +105,8 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 119,
     height: 119,
+    borderRadius: 10, // ✅ 圆角优化
+    backgroundColor: '#E0E0E0', // ✅ 备用背景颜色，防止图片加载失败时显示空白
   },
   details: {
     justifyContent: 'center',

@@ -18,6 +18,7 @@
     "@react-navigation/stack": "^7.0.18",
     "@use-expo/font": "^2.0.0",
     "axios": "^1.7.9",
+    "dayjs": "^1.11.13",
     "expo": "^52.0.35",
     "expo-asset": "^11.0.1",
     "expo-file-system": "^18.0.6",
