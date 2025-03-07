@@ -15,10 +15,10 @@ const Login = ({ navigation }) => {
             Alert.alert('提示', '请输入用户名和密码');
             return;
         }
-
+        const normalizedUsername = username.trim().toLowerCase(); // ✅ 转为小写，不分大小写
         try {
-            const { token } = await loginTeacher(username, password);  // 调用 API 登录
-            await setUsernameAsync(username);  // 存储用户名
+            const { token } = await loginTeacher(normalizedUsername, password);  // 调用 API 登录
+            await setUsernameAsync(normalizedUsername);  // 存储用户名
             setToken(token);  // ✅ 存储 JWT 令牌
             console.log(token);
             Alert.alert('登录成功');

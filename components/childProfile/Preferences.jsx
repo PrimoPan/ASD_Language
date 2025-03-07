@@ -137,7 +137,7 @@ const Preferences = () => {
               <>
                 {localExistsMap[item.id] ? (
                     <Image
-                        source={{ uri: decodeURIComponent(item.image.uri) }} // 使用 decodeURIComponent 解码
+                        source={{ uri: decodeURIComponent(item?.image?.uri) }} // 使用 decodeURIComponent 解码
                         style={styles.preferenceImage}
                         resizeMode="contain"
                         onError={(error) => {

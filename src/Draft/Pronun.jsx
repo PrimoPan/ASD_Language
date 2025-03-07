@@ -11,14 +11,14 @@ import {
 import useStore from "../store/store.jsx";
 import { gptQuery } from "../utils/api";
 
-const Pronun = () => {
+const Pronun = ({viewMode}) => {
     // 从 store 中获取数据和更新方法
     const {
         currentChildren: { name },
         learningGoals,
         setLearningGoals  // 假设这是你在 store 中定义的更新 learningGoals 的方法
     } = useStore();
-
+    const isFinal = viewMode === "final";
     const [loading, setLoading] = useState(false);
     const [planContent, setPlanContent] = useState('');
     const [editing, setEditing] = useState(false);
@@ -35,6 +35,8 @@ const Pronun = () => {
     // 仅调试用：查看 name/learningGoals
     useEffect(() => {
         console.log("Goals", learningGoals);
+        console.log(isFinal);
+        console.log(viewMode);
     }, [name, learningGoals]);
 
     // 拼接卡片素材字符串
@@ -102,12 +104,13 @@ const Pronun = () => {
 
             {/* 右侧内容区域 */}
             <View style={styles.rightContainer}>
+                { !isFinal && (
                 <TouchableOpacity style={styles.fetchButton} onPress={fetchTeachingPlan}>
                     <Text style={styles.fetchButtonText}>
                         {planContent ? '生成教学计划' : '获取教学计划'}
                     </Text>
                 </TouchableOpacity>
-
+                )}
                 {loading ? (
                     <ActivityIndicator size="large" color="#0000ff" />
                 ) : (
@@ -126,7 +129,7 @@ const Pronun = () => {
                                     <Text style={styles.planText}>{planContent}</Text>
                                 </ScrollView>
                             )}
-
+                            { !isFinal && (
                             <TouchableOpacity
                                 style={styles.editButtonWrapper}
                                 onPress={handleEditButtonPress}
@@ -135,6 +138,7 @@ const Pronun = () => {
                                     {editing ? '完成' : '编辑'}
                                 </Text>
                             </TouchableOpacity>
+                                )}
                         </View>
                     )
                 )}

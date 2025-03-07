@@ -12,9 +12,10 @@ import {
 import useStore from "../store/store.jsx";
 import { gptQuery } from "../utils/api";
 
-const Dia = () => {
+const Dia = ({viewMode}) => {
     const { name } = useStore(state => state.currentChildren);
     const { learningGoals, setLearningGoals } = useStore();
+    const isFinal = viewMode === "final";
 
     const [loading, setLoading] = useState(false);
     const [planContent, setPlanContent] = useState('');
@@ -23,6 +24,7 @@ const Dia = () => {
     const namingDetails = learningGoals?.对话?.detail || [];
     useEffect(() => {
         console.log("Goals", learningGoals);
+        console.log(isFinal);
     }, []);
 
     // 处理卡片素材字符串
@@ -115,11 +117,13 @@ const Dia = () => {
 
             {/* 右侧内容区域 */}
             <View style={styles.rightContainer}>
+                { !isFinal && (
                 <TouchableOpacity style={styles.fetchButton} onPress={fetchTeachingPlan}>
                     <Text style={styles.fetchButtonText}>
                         {planContent ? '生成教学计划' : '获取教学计划'}
                     </Text>
                 </TouchableOpacity>
+                )}
 
                 {loading ? (
                     <ActivityIndicator size="large" color="#0000ff" />
@@ -139,8 +143,8 @@ const Dia = () => {
                                     <Text style={styles.planText}>{planContent}</Text>
                                 </ScrollView>
                             )}
-
-                            <TouchableOpacity
+                            { !isFinal && (
+                                <TouchableOpacity
                                 style={styles.editButtonWrapper}
                                 onPress={handleEditButtonPress}
                             >
@@ -148,6 +152,7 @@ const Dia = () => {
                                     {editing ? '完成' : '编辑'}
                                 </Text>
                             </TouchableOpacity>
+                                )}
                         </View>
                     )
                 )}

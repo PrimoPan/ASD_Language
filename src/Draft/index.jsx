@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, Alert,ScrollView, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, Alert, ScrollView, Image } from 'react-native';
 import useStore from "../store/store.jsx";
-import { useNavigation } from "@react-navigation/native";
-import { createLearning } from "../services/api"; // ✅ 引入 API
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { createLearning } from "../services/api";
 import Pronun from "./Pronun";
 import Naming from "./Naming";
 import Ls from "./Ls.jsx";
@@ -10,7 +10,6 @@ import Dia from "./Dia";
 import LearningTitle from './LearningTitle';
 import ButtonGroup from './ButtonGroup';
 
-// 获取屏幕宽度和高度
 const { width, height } = Dimensions.get('window');
 
 const Draft = () => {
@@ -18,31 +17,37 @@ const Draft = () => {
     const { name } = useStore(state => state.currentChildren);
     const { learningGoals } = useStore();
 
-    // **所有可能的模块**
+    // “draft” => 编辑模式， “final” => 查看模式
+    const route = useRoute();
+    const initialMode = route.params?.mode || 'draft';
+    const [viewMode, setViewMode] = useState(initialMode);
+
+
+    // 所有模块
     const Models = ['构音模块', '命名模块', '语言结构模块', '对话模块'];
 
-    // **确保 `learningGoals` 存在**
+    // 确保 learningGoals 存在
     const safeLearningGoals = learningGoals || {};
 
-    // **计算当前儿童的可用模块索引**
+    // 计算可用模块索引
     const availableModulesIndex = Models.map((_, index) => {
         if (index === 0 && safeLearningGoals?.构音) return index;
         if (index === 1 && safeLearningGoals?.命名) return index;
         if (index === 2 && safeLearningGoals?.语言结构) return index;
         if (index === 3 && safeLearningGoals?.对话) return index;
         return null;
-    }).filter(index => index !== null); // ✅ **确保 `availableModulesIndex` 是数组**
+    }).filter(index => index !== null);
 
-    // **如果 `availableModulesIndex` 为空，默认设置为 `[0]`**
+    // 如果没有可用模块，就默认只显示第一个
     const safeAvailableModulesIndex = availableModulesIndex.length > 0 ? availableModulesIndex : [0];
 
-    // **计算最后一个可用模块的索引**
+    // 最后一个可用模块
     const allowedLastStep = safeAvailableModulesIndex[safeAvailableModulesIndex.length - 1];
 
-    // **计算可用模块的名称**
+    // 获取可用模块的名称数组
     const availableModules = Models.filter((_, index) => safeAvailableModulesIndex.includes(index));
 
-    // **初始状态设为第一个有效模块**
+    // 当前模块
     const [currentStep, setCurrentStep] = useState(safeAvailableModulesIndex[0]);
     const [selectedTheme, setSelectedTheme] = useState(Models[currentStep]);
 
@@ -50,34 +55,68 @@ const Draft = () => {
         setSelectedTheme(Models[currentStep]);
     }, [currentStep]);
 
-    // **提交学习计划**
+    // 提交学习计划
     const handleSubmitLearning = async () => {
         try {
             const response = await createLearning(safeLearningGoals, name);
-            console.log(response);
             Alert.alert("✅ 提交成功", "学习记录已保存！");
+
+            // 切换到查看模式
+            setViewMode("final");
+            // **重置到第一个可用模块**
+            setCurrentStep(safeAvailableModulesIndex[0]);
+
         } catch (error) {
             Alert.alert("❌ 提交失败", error.toString());
         }
     };
 
-    // **下一步逻辑**
+    // 下一步逻辑
     const handleNextStep = () => {
-        if (currentStep === allowedLastStep) {  // ✅ **如果 currentStep 是最后一个模块，则提交**
+        // 如果在查看模式
+        if (viewMode === "final") {
+            // 如果已经是最后一个模块了 => 是否回到主菜单
+            if (currentStep === allowedLastStep) {
+                Alert.alert(
+                    "提示",
+                    "是否回到主菜单？",
+                    [
+                        { text: '取消', style: 'cancel' },
+                        {
+                            text: '确定',
+                            onPress: () => {
+                                navigation.navigate("ChildrenList");
+                            }
+                        }
+                    ],
+                    { cancelable: false }
+                );
+            } else {
+                // 如果还没到最后一个 => 继续下一个模块
+                const currentIndex = safeAvailableModulesIndex.indexOf(currentStep);
+                const nextStep = safeAvailableModulesIndex[currentIndex + 1];
+                if (nextStep !== undefined) {
+                    setCurrentStep(nextStep);
+                }
+            }
+            return;
+        }
+
+        // 如果处于编辑模式
+        if (currentStep === allowedLastStep) {
             Alert.alert(
                 '提示',
                 '是否开始上课\n继续教学将本次教学目标上传到服务器，开始投影教学！',
                 [
-                    { text: '取消', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
-                    { text: '确定', onPress: () => handleSubmitLearning() }, // ✅ **点击确定后上传**
+                    { text: '取消', style: 'cancel' },
+                    { text: '确定', onPress: () => handleSubmitLearning() },
                 ],
                 { cancelable: false }
             );
         } else {
-            // **找到下一个可用的模块**
+            // 普通下一步
             const currentIndex = safeAvailableModulesIndex.indexOf(currentStep);
             const nextStep = safeAvailableModulesIndex[currentIndex + 1];
-
             if (nextStep !== undefined) {
                 setCurrentStep(nextStep);
             }
@@ -85,48 +124,48 @@ const Draft = () => {
     };
 
     const handleLast = () => {
+        // 如果查看模式 => 禁止往回
+        if (viewMode === "final") {
+            Alert.alert("提示", "查看模式下无法返回上一步");
+            return;
+        }
+
+        // 编辑模式下 => 找到上一个可用模块
         const currentIndex = safeAvailableModulesIndex.indexOf(currentStep);
         const prevStep = safeAvailableModulesIndex[currentIndex - 1];
-
         if (prevStep !== undefined) {
             setCurrentStep(prevStep);
         } else {
+            // 如果已经是第一个 => 回到别的页面
             navigation.navigate('HorizontalLayout');
         }
     };
 
     return (
         <View style={[styles.container, { width, height }]}>
-
-            <Text style={styles.title}>教材草稿</Text>
+            {/* 如果是查看模式，标题改“教案内容”，否则“教材草稿” */}
+            <Text style={styles.title}>{viewMode === "final" ? "教案内容" : "教材草稿"}</Text>
             <Text style={styles.childFile}>儿童档案</Text>
             <Text style={styles.logo}>LingoLift</Text>
             <View style={styles.ellipse} />
             <Text style={styles.childName}>儿童姓名：{name}</Text>
             <View style={styles.rectangle75} />
 
-            {/* Render the LearningTitle Component */}
             {currentStep < 4 && (
                 <LearningTitle
                     selectedTheme={selectedTheme}
-                    onSelect={setSelectedTheme}
-                    onChangeStep={setCurrentStep}
-                    availableModules={availableModules} // ✅ 现在 `availableModules` 一定是数组
+                    // 在查看模式下禁用 change
+                    onSelect={viewMode === "final" ? () => {} : setSelectedTheme}
+                    onChangeStep={viewMode === "final" ? () => {} : setCurrentStep}
+                    availableModules={availableModules}
                 />
             )}
-            {currentStep === 0 && (
-                <Pronun />
-            )}
-            {currentStep === 1 && (
-                <Naming/>
-            )}
-            {currentStep === 2 && (
-                <Ls/>
-            )}
-            {currentStep === 3 && (
-                <Dia/>
-            )}
-            {/* Render the ButtonGroup Component */}
+            {currentStep === 0 && <Pronun viewMode={viewMode} />}
+            {currentStep === 1 && <Naming viewMode={viewMode} />}
+            {currentStep === 2 && <Ls viewMode={viewMode} />}
+            {currentStep === 3 && <Dia viewMode={viewMode} />}
+
+            {/* 示例：下方的图片滚动 */}
             <View style={styles.imageScrollContainer}>
                 <ScrollView horizontal>
                     {learningGoals?.构音?.cards
@@ -144,10 +183,13 @@ const Draft = () => {
                     }
                 </ScrollView>
             </View>
+
             <ButtonGroup handleNext={handleNextStep} handleLast={handleLast} step={currentStep} />
         </View>
     );
 };
+
+export default Draft;
 
 const styles = StyleSheet.create({
     container: {
@@ -204,19 +246,10 @@ const styles = StyleSheet.create({
         top: 17,
         left: '80%',
     },
-    selectPrompt: {
-        fontSize: 16,
-        color: 'rgba(28, 91, 131, 0.50)',
-        position: 'absolute',
-        top: 700,
-        left: '35%',
-    },
     imageScrollContainer: {
         position: 'fixed',
-        // 固定高度或最大高度，这里示例200 + 一些margin
-        height: 220, // 你需要多高可自行调整
+        height: 220,
         top: '12%',
-        // 如果想要更灵活，可用 maxHeight: 220, 并加 overflow: "hidden"
     },
     imageCard: {
         position: 'relative',
@@ -241,5 +274,3 @@ const styles = StyleSheet.create({
         color: '#000',
     },
 });
-
-export default Draft;
