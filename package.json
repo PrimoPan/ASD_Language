@@ -1,7 +1,9 @@
 {
-  "name": "AsdLanguage",
-  "version": "0.0.1",
+  "name": "LingoLift",
+  "version": "1.0.0",
   "private": true,
+  "description": "An LLM, Text-to-Image, and AR-based personalized educational system developed by ARK Lab, HKUST(GZ) for children with autism.",
+  "author": "Dongyijie Primo PAN, Ziheng TANG",
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
