@@ -49,13 +49,13 @@ export const generateImage = async (description) => {
     if (!description.trim()) {
         throw new Error('图片描述不能为空');
     }
-
+    console.log('debug',description);
     try {
         const response = await axios.post(
-            `${BASE_URL}/i/pic`,
+            `${BASE_URL}/i/pic_hy`,
             {
                 uid: 'a81s', // 替换为后端提供的用户标识
-                picreq: '场景尽量简单，如果出现人物确保都是中国小孩'+description,
+                picreq: description,
             },
             {
                 headers: {
@@ -63,13 +63,15 @@ export const generateImage = async (description) => {
                 },
             }
         );
-        console.log('生图prompt:',description);
-        const { data } = response.data;
+
+        console.log('生图prompt:', description);
         console.log(response.data);
-        if (!data) {
-            throw new Error('接口未返回图片 URL');
+
+        if (response.data.code !== 0 || !response.data.imgurl) {
+            throw new Error('接口未返回有效的图片 URL');
         }
-        return data; // 返回图片 URL
+
+        return response?.data?.imgurl; // 直接返回图片 URL
     } catch (error) {
         throw new Error(error.response?.data?.message || '生成图片失败');
     }

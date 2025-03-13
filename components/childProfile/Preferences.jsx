@@ -4,17 +4,18 @@ import useStore from '../../src/store/store';
 import { generateImage } from "../../src/utils/api";
 import { cacheImage } from "../../src/utils/imageCache";
 import RNFetchBlob from 'rn-fetch-blob';
-import {changeChildrenInfo} from "../../src/services/api";
+import { changeChildrenInfo } from "../../src/services/api";
 
 const Preferences = () => {
   const { currentChildren } = useStore();
   const { reinforcements = [], imageStyle } = currentChildren || {};
   const [loadingMap, setLoadingMap] = useState({});
-  const [localExistsMap, setLocalExistsMap] = useState({}); // 新增状态来跟踪本地文件是否存在
+  const [localExistsMap, setLocalExistsMap] = useState({});
 
   // 处理图片生成
   const handleGenerateImages = async () => {
     try {
+      // 找出没有 image 字段的条目需要生成图片
       const needGenerate = reinforcements.filter(item => !item.image);
       if (needGenerate.length === 0) return;
 
@@ -46,22 +47,23 @@ const Preferences = () => {
             try {
               const prompt = generatePrompt(item.value, imageStyle);
               const remoteUrl = await generateImage(prompt);
-
+              console.log(remoteUrl);
               if (remoteUrl === '0') return item;
 
               let localUri;
               try {
+                // cacheImage 应该返回形如 "file://xxx/xxx.png"
                 localUri = await cacheImage(remoteUrl);
               } catch (e) {
                 console.warn('Caching failed:', e);
-                localUri = remoteUrl; // Fallback to original URL
+                localUri = remoteUrl; // 失败则回退用远程 URL
               }
 
               return {
                 ...item,
                 image: {
-                  uri: localUri,     // Local path or fallback URL
-                  remote: remoteUrl // Original cloud URL
+                  uri: localUri,      // 本地路径(或fallback)
+                  remote: remoteUrl   // 原远端路径
                 }
               };
             } catch (error) {
@@ -74,26 +76,30 @@ const Preferences = () => {
       // 合并更新后的数据
       const mergedMap = new Map(updated.map(item => [item.id, item]));
       const merged = reinforcements.map(originalItem =>
-          mergedMap.get(originalItem.id) || originalItem // ✅保留原始有效数据
+          mergedMap.get(originalItem.id) || originalItem
       );
 
-      // 更新zustand
+      // 更新到 Zustand
       useStore.getState().setCurrentChildren({
         ...currentChildren,
         reinforcements: merged.filter(Boolean).map(i => ({
           ...i,
-          image: i.image ? { uri: i.image.uri, remote: i.image.remote } : undefined
+          image: i.image
+              ? { uri: i.image.uri, remote: i.image.remote }
+              : undefined
         }))
       });
+
+      // 上传给后端时只带 remote，不带本地 uri
       const childrenForUpload = {
         ...currentChildren,
         reinforcements: updated.map(i => ({
           ...i,
-          image: i.image ? { remote: i.image.remote } : undefined // **只传 remote，不传 uri**
+          image: i.image ? { remote: i.image.remote } : undefined
         }))
       };
-
       await changeChildrenInfo(childrenForUpload);
+
     } catch (error) {
       console.error('批量生成失败:', error);
     } finally {
@@ -101,6 +107,7 @@ const Preferences = () => {
     }
   };
 
+  // 当 reinforcements 或 imageStyle 变化时，自动生成图片
   useEffect(() => {
     if (reinforcements?.length > 0) {
       handleGenerateImages();
@@ -112,9 +119,16 @@ const Preferences = () => {
     const checkLocalFiles = async () => {
       const newLocalExistsMap = {};
       for (const item of reinforcements) {
-        if (item.image?.uri) {
-          const exists = await RNFetchBlob.fs.exists(item.image.uri);
+        // 如果有本地 uri，就检查一下
+        const localUri = item.image?.uri;
+        if (localUri && localUri.startsWith('file://')) {
+          // 去掉 "file://" 后再给 fs.exists
+          const pathWithoutPrefix = localUri.replace('file://', '');
+          const exists = await RNFetchBlob.fs.exists(pathWithoutPrefix);
           newLocalExistsMap[item.id] = exists;
+        } else {
+          // 如果没有本地文件或者不是 file:// 开头，就标记 false
+          newLocalExistsMap[item.id] = false;
         }
       }
       setLocalExistsMap(newLocalExistsMap);
@@ -126,6 +140,7 @@ const Preferences = () => {
   // 渲染单个强化物项
   const renderItem = ({ item }) => {
     const isLoading = loadingMap[item.id];
+    const localExists = localExistsMap[item.id];
 
     return (
         <View style={styles.preferenceItem}>
@@ -135,22 +150,24 @@ const Preferences = () => {
               </View>
           ) : (
               <>
-                {localExistsMap[item.id] ? (
+                {localExists ? (
+                    // 如果本地文件存在，则显示本地图片
                     <Image
-                        source={{ uri: decodeURIComponent(item?.image?.uri) }} // 使用 decodeURIComponent 解码
+                        source={{ uri: item.image?.uri }}
                         style={styles.preferenceImage}
                         resizeMode="contain"
                         onError={(error) => {
-                          console.error('Image loading error:', error.nativeEvent.error);
+                          console.error('Image loading error (local):', error.nativeEvent.error);
                         }}
                     />
                 ) : (
+                    // 否则还是用远端地址
                     <Image
-                        source={{ uri: item.image?.remote }} // 直接使用 remote URL
+                        source={{ uri: item.image?.remote }}
                         style={styles.preferenceImage}
                         resizeMode="contain"
                         onError={(error) => {
-                          console.error('Image loading error:', error.nativeEvent.error);
+                          console.error('Image loading error (remote):', error.nativeEvent.error);
                         }}
                     />
                 )}
